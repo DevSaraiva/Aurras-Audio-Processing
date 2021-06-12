@@ -11,8 +11,9 @@ typedef struct filtro{
     
     char * identificador;
     char * executavel;
-    int tamFilaEspera;
-    int emEspera;
+    int numeroMaxExecucao;
+    int emExecucao;
+    pid_t * pids;
 
 
 } filtroConfig;
@@ -63,11 +64,37 @@ void criaConfigs(filtroConfig configs[], int numFiltros){
         readln(fdConfig, line, 1024);
         configs[i].identificador = strdup(strtok(line," "));
         configs[i].executavel = strdup(strtok(NULL," "));
-        configs[i].tamFilaEspera = atoi(strtok(NULL," "));
+        configs[i].numeroMaxExecucao = atoi(strtok(NULL," "));
         
     }
     
      
+}
+
+int contaPal (char s[]){
+	int pal = 0, i = 0;
+	while (s[i]){
+		if (s[i] != ' ' && s[i] != '\n' && (s[i+1] == ' '|| s[i+1] == '\0'))
+			pal++;
+		i++;
+	}
+	return pal;
+}
+
+
+// Função que recebe uma string e separa por espaços os argumentos
+void parse (char * string2, char ** destination){
+    char * string = strtok(string2,";");
+    //printf ("string :%s\n",string);
+    char * aux = strtok(string," ");
+    int i = 0;
+    while (aux != NULL){
+        //printf("%s\n",aux);
+        destination[i] = strdup(aux);
+        i++;
+        aux = strtok(NULL," ");
+    }
+    
 }
 
 
@@ -82,20 +109,9 @@ int main(int argc, char ** args){
     
     }
     
-    int fdConfig = open("../etc/aurrasd.conf", O_RDONLY, 0666);
-     
-
-    //int fd = open("/tmp/fifo", O_RDONLY);
-  
-    //int hold_fifo = open("/tmp/fifo",O_WRONLY);
-    
-    //int bytesRead = 0;
-    
-    //char buffer[1024];
-    
     
     //Leitura da configuração
-    
+    int fdConfig = open("../etc/aurrasd.conf", O_RDONLY, 0666);
 
     int numFiltros = contaLinhas(fdConfig);
    
@@ -103,20 +119,28 @@ int main(int argc, char ** args){
 
     criaConfigs(configs, numFiltros);
 
-    printf("%s",configs[0].identificador);
-
+     
+    int fd = open("/tmp/fifo", O_RDONLY);
+    int hold_fifo = open("/tmp/fifo",O_WRONLY);
+    int bytesRead = 0;
+    char buffer[1024];
+    setbuf(stdout,NULL);
+        
+        
+        while((bytesRead = read(fd, buffer, 1024)) > 0) {
+            int  nArgs = contaPal(buffer);
+            char * destination[nArgs];// = malloc( (sizeof(char *)) * nArgs);
+            parse (buffer,destination);
+            for (int i = 0; i <nArgs ; i++){
+                printf("%s\n",destination[i]);
+            }
+        }
 
     
-
-
-        //while((bytesRead = read(fd, buffer, 1024)) > 0) {
-        //    write(1, buffer, bytesRead);
-            
-        //}
-
+    close(fd);
+    close(hold_fifo);
     
-    //close(fd);
-    //close(hold_fifo);
     return 0;
     
 }
+

@@ -7,17 +7,34 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int main(int argc, char ** args){
+static const int MAXSIZEMESSAGE = 100;
 
-    char buffer[1024];
-    int bytesRead = 0;
-    int fd = open("/tmp/fifo", O_WRONLY);
-
-    while((bytesRead = read(STDIN_FILENO, buffer, 1024)) > 0) {
-       
-        write(fd, buffer, bytesRead);
-        
+int parse (int argc, char ** args,char destination[MAXSIZEMESSAGE]){
+    
+    for (int i = 0; i < argc ;i++){
+       if (strlen(destination) + strlen(args[i]) > MAXSIZEMESSAGE) return -1;
+       strcat(destination,args[i]); 
+       if (i == argc -1) strcat(destination,";");
+       else strcat(destination," ");
     }
+    
+    return strlen(destination);
+}
+
+int main(int argc,char ** args){
+
+    int fd = open("/tmp/fifo", O_WRONLY);
+    char destination[MAXSIZEMESSAGE];
+    int len = parse(argc,args,destination);
+    if (len == -1){
+        printf("Mensagem demasiado grande");
+    }
+    else {
+        
+        write(fd, destination, len);
+    }
+        
+    
     close(fd);
     return 0;
 }
