@@ -7,8 +7,27 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+typedef struct filtro{
+    
+    char identificador[20];
+    char executavel[20];
+    int tamFilaEspera;
+    int emEspera;
+
+
+} filtroConfig;
+
+
+void criaConfigs(filtroConfig configs[]){
+    
+}
+
+
 int main(char ** args, int argc){
     
+
+
+
     if(mkfifo("/tmp/fifo", 0666) == -1){
             perror("mkfifo");
     
@@ -21,12 +40,11 @@ int main(char ** args, int argc){
     
 
         while((bytesRead = read(fd, buffer, 1024)) > 0) {
-            write(1, buffer, 1024);
+            write(1, buffer, bytesRead);
             
         }
 
     
-   
     close(fd);
     close(hold_fifo);
     return 0;
