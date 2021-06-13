@@ -8,11 +8,13 @@
  *  -> Numero da task
  *  -> Pid do processo
  *  -> filtros necessários [lista] indice 0 corresponde ao filtro 0, indice 1 ...
+ * -> comando passado pelo cliente
  * */
 struct task{
     int numberTask; // Numero de ordem da task
     int pidProcess;
     int filtersRequired[NUMBERFILTERS];
+    char * comando;
 };
 
 Task createTask(int taskNumber, int pidProcess, int filtersRequired[]){

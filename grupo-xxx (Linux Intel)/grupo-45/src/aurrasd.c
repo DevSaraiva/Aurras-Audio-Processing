@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "../headers/request.h"
-#include "../headers/waitingTasks.h"
+#include "../headers/listTasks.h"
 #include "../headers/task.h"
 
 #define FIFOSERVERCLIENTS "/tmp/fifo"
@@ -109,6 +109,7 @@ void initServer(){
 
 
 int main(int argc, char ** args){
+    
     int fd,hold_fifo;
 
     unlink(FIFOSERVERCLIENTS);
@@ -164,7 +165,7 @@ int main(int argc, char ** args){
                 pid_t pid,terminated_pid;
                 int status;
 
-                filtersNeeded(request);
+                //filtersNeeded(request);
 
                 if((pid = fork()) == 0){
                     //fazer o processamento pedido
@@ -185,8 +186,7 @@ int main(int argc, char ** args){
 
             case 2:
                 printf("Processar status");
-                pid_t pid,terminated_pid;
-                int status;
+                
 
                 if((pid = fork()) == 0){
                     _exit(0);

@@ -14,6 +14,8 @@
 
 int main(int argc,char ** args){
 
+    pid_t pidProcess = getpid();
+    
     /*
      * Criar o request para enviar ao servidor
      * */
