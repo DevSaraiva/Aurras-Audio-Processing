@@ -6,35 +6,38 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "../headers/request.h"
 
-static const int MAXSIZEMESSAGE = 100;
+#define FIFOSERVERCLIENTS "/tmp/fifo"
 
-int parse (int argc, char ** args,char destination[MAXSIZEMESSAGE]){
-    
-    for (int i = 0; i < argc ;i++){
-       if (strlen(destination) + strlen(args[i]) > MAXSIZEMESSAGE) return -1;
-       strcat(destination,args[i]); 
-       if (i == argc -1) strcat(destination,";");
-       else strcat(destination," ");
-    }
-    
-    return strlen(destination);
-}
+
 
 int main(int argc,char ** args){
 
-    int fd = open("/tmp/fifo", O_WRONLY);
-    char destination[MAXSIZEMESSAGE];
-    int len = parse(argc,args,destination);
-    if (len == -1){
-        printf("Mensagem demasiado grande");
+    /*
+     * Criar o request para enviar ao servidor
+     * */
+    Request request = initRequest(argc,args,pidProcess);
+
+    /*
+     * O serviço pedido não é válido
+     * */
+    if(!request){
+        printf("Os argumentos não são válidos\n");
+        return -1;
     }
-    else {
-        
-        write(fd, destination, len);
-    }
-        
-    
+
+    /*
+     * Mostrar ao cliente o serviço que acabou de pedir
+     * */
+    printRequest(request);
+    int fd = open(FIFOSERVERCLIENTS, O_WRONLY);
+
+    /*
+     * Enviar request ao servidor
+     * */
+    write(fd,request,requestSize());
+
     close(fd);
     return 0;
 }

@@ -6,9 +6,15 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "../headers/request.h"
+#include "../headers/waitingTasks.h"
+#include "../headers/task.h"
+
+#define FIFOSERVERCLIENTS "/tmp/fifo"
+#define CONFIGFILENAME "../etc/aurrasd.conf"
 
 typedef struct filtro{
-    
+
     char * identificador;
     char * executavel;
     int numeroMaxExecucao;
@@ -34,7 +40,7 @@ int contaLinhas(int fd){
 ssize_t readln(int fd, char *line, size_t size){
     size_t size_Line = 0;
     int barraN = 0;
-       
+
 
     do{
         read(fd,line + size_Line,1);
@@ -53,11 +59,11 @@ ssize_t readln(int fd, char *line, size_t size){
 }
 
 void criaConfigs(filtroConfig configs[], int numFiltros){
-    
+
     char line[1024];
-    
-    int fdConfig  = open("../etc/aurrasd.conf", O_RDONLY, 0666);
-    
+
+    int fdConfig  = open(CONFIGFILENAME, O_RDONLY, 0666);
+
 
     for(int i = 0; i < numFiltros; i++){
 
@@ -65,10 +71,10 @@ void criaConfigs(filtroConfig configs[], int numFiltros){
         configs[i].identificador = strdup(strtok(line," "));
         configs[i].executavel = strdup(strtok(NULL," "));
         configs[i].numeroMaxExecucao = atoi(strtok(NULL," "));
-        
+
     }
-    
-     
+
+
 }
 
 int contaPal (char s[]){
@@ -94,53 +100,121 @@ void parse (char * string2, char ** destination){
         i++;
         aux = strtok(NULL," ");
     }
-    
+
+}
+
+void initServer(){
+
 }
 
 
 int main(int argc, char ** args){
-    
-    setbuf(stdout,NULL);
+    int fd,hold_fifo;
 
-    unlink("/tmp/fifo");
+    unlink(FIFOSERVERCLIENTS);
 
-    if(mkfifo("/tmp/fifo", 0666) == -1){
-            perror("mkfifo");
-    
+    if(mkfifo(FIFOSERVERCLIENTS, 0666) == -1){
+            perror("fifo between server and clients");
+
     }
-    
-    
+
     //Leitura da configuração
-    int fdConfig = open("../etc/aurrasd.conf", O_RDONLY, 0666);
+    int fdConfig = open(CONFIGFILENAME, O_RDONLY, 0666);
 
     int numFiltros = contaLinhas(fdConfig);
-   
+
     filtroConfig configs[numFiltros];
 
     criaConfigs(configs, numFiltros);
 
-     
-    int fd = open("/tmp/fifo", O_RDONLY);
-    int hold_fifo = open("/tmp/fifo",O_WRONLY);
-    int bytesRead = 0;
-    char buffer[1024];
-    setbuf(stdout,NULL);
-        
-        
-        while((bytesRead = read(fd, buffer, 1024)) > 0) {
-            int  nArgs = contaPal(buffer);
-            char * destination[nArgs];// = malloc( (sizeof(char *)) * nArgs);
-            parse (buffer,destination);
-            for (int i = 0; i <nArgs ; i++){
-                printf("%s\n",destination[i]);
-            }
-        }
 
-    
+    if( (fd = open(FIFOSERVERCLIENTS, O_RDONLY)) == -1){
+            perror("fifo between server and clients Read");
+    }
+
+    if( ( hold_fifo = open(FIFOSERVERCLIENTS, O_WRONLY)) == -1){
+            perror("fifo between server and clients Write");
+    }
+
+    /*
+     * Abrimos a extremidade de escrita do pipe que comunica com os clientes
+     * para que caso nenhum cliente esteja associado ao servidor este pipe não desapareça
+     * */
+
+
+    while(1){
+        Request request = createRequest();
+        read(fd,request,requestSize());
+
+        printRequest(request);
+
+        switch(getRequestService(request)){
+            case 1:
+                printf("Processar transform");
+                // O servidor tem de ir buscar o estado atual do servidor e enviar para o client
+                // A leitura do estado tem de ser uma operação atómica
+                // ao criar um processo flho o estado do processo filho não é mais alterado pelo processo pai
+                // por isso o estado do servidor no processo filho é estático
+                //
+
+                //verificar se posso fazer o processamento
+                //se sim criar processo filho para fazer o processamento e atualizar os filtro
+                //se não, colocar o processamento numa fila de espera, e passar para o próximo request
+
+                pid_t pid,terminated_pid;
+                int status;
+
+                filtersNeeded(request);
+
+                if((pid = fork()) == 0){
+                    //fazer o processamento pedido
+                }
+                else{
+                    /*
+                     * O terminated_pid é o identificador do processo filho que terminou
+                     * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
+                     * */
+                    terminated_pid = wait(&status);
+
+                    /*
+                     * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
+                     * */
+                    printf("terminated_pid: %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
+                }
+                break;
+
+            case 2:
+                printf("Processar status");
+                pid_t pid,terminated_pid;
+                int status;
+
+                if((pid = fork()) == 0){
+                    _exit(0);
+                }
+                else{
+                    /*
+                     * O terminated_pid é o identificador do processo filho que terminou
+                     * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
+                     * */
+                    terminated_pid = wait(&status);
+
+                    /*
+                     * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
+                     * */
+                    printf("terminated_pid: %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
+                }
+                break;
+
+            default:
+                printf("Nothing");
+
+        }
+    }
+
     close(fd);
     close(hold_fifo);
-    
+
     return 0;
-    
+
 }
 
