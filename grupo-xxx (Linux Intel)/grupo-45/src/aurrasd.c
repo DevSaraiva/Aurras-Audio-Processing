@@ -104,6 +104,8 @@ void initServer(){
 int main(int argc, char ** args){
     
     int fd,hold_fifo;
+    
+    setbuf(stdout,NULL);
 
     unlink(FIFOSERVERCLIENTS);
 
@@ -127,9 +129,18 @@ int main(int argc, char ** args){
 
     listTasks emEspera = createListTasks();
 
-    listTasks * aExecutar = createListTasks();
+    listTasks aExecutar = createListTasks();
     
     
+    Task t = createTask(1,122121,NULL,numFiltros,"fsdadfassdfafasdfdas afdsf asdfdas");
+
+    addTask(aExecutar,t);
+
+    status sts = getStatus(aExecutar, configs, numFiltros, getpid());
+
+    for(int i = 0; i < 1; i++) printf("%s",sts.tasksExec[i]);
+
+
     
     //Abertura do Fifo
 

@@ -6,15 +6,14 @@
 /*
  * Constants
  * */
-#define NUMBERFILTERS 4
-
 typedef struct task *Task;
 
 
 /*
  * Create task
  * */
-Task createTask(int taskNumber, int pidProcess, int filtersRequired[]);
+
+Task createTask(int taskNumber, int pidProcess, int filtersRequired[], int numFilters, char * comando);
 
 int getFilter(Task task, int indexFilter);
 
@@ -24,5 +23,6 @@ int getPidProcess(Task task);
 
 void deleteTask(Task task);
 
+char * getComando(Task task);
 
 #endif

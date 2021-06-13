@@ -14,20 +14,25 @@
 struct task{
     int numberTask; // Numero de ordem da task
     int pidProcess;
-    int filtersRequired[NUMBERFILTERS];
+    int *filtersRequired;
     char * comando;
 };
 
-Task createTask(int taskNumber, int pidProcess, int filtersRequired[]){
+Task createTask(int taskNumber, int pidProcess, int filtersRequired[], int numFilters, char * comando){
     int i;
 
     Task task = (Task) malloc(sizeof(struct task));
 
-    task->numberTask = taskNumber;
+    task->numberTask = 10000000;
     task->pidProcess = pidProcess;
-    for( i=0; i<NUMBERFILTERS; i++){
-        task->filtersRequired[i] = filtersRequired[i];
+    //task->filtersRequired = malloc(sizeof(int) * numFilters);
+    
+    for( i=0; i<numFilters; i++){
+        
+      //  task->filtersRequired[i] = filtersRequired[i];
     }
+    
+    task->comando = comando;
 
     return task;
 }
@@ -46,4 +51,8 @@ int getPidProcess(Task task){
 
 void deleteTask(Task task){
     free(task);
+}
+
+char * getComando(Task task){
+    return task ->comando;
 }
