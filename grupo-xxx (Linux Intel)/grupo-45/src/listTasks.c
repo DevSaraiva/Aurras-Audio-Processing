@@ -16,12 +16,12 @@ struct listTaskSv{
 };
 
 listTasks createListTasks(){
-    listTasks wTasks = malloc(sizeof(struct listTaskSv));
+    listTasks lTasks = malloc(sizeof(struct listTaskSv));
 
-    wTasks->listTasks = g_ptr_array_new();
-    wTasks->numberTasks = 0;
+    lTasks->listTasks = g_ptr_array_new();
+    lTasks->numberTasks = 0;
 
-    return wTasks;
+    return lTasks;
 }
 
 void addTask(listTasks wTasks, Task task){
@@ -41,7 +41,7 @@ Task getTaskIndex(listTasks wTasks, int index){
 }
 
 
-int getNumberListTasks(listTasks wTasks){
+int getSizeListTasks(listTasks wTasks){
     return (int)wTasks->listTasks->len;
 }
 

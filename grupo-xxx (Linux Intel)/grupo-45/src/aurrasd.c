@@ -9,20 +9,10 @@
 #include "../headers/request.h"
 #include "../headers/listTasks.h"
 #include "../headers/task.h"
+#include "../headers/status.h"
 
 #define FIFOSERVERCLIENTS "/tmp/fifo"
 #define CONFIGFILENAME "../etc/aurrasd.conf"
-
-typedef struct filtro{
-
-    char * identificador;
-    char * executavel;
-    int numeroMaxExecucao;
-    int emExecucao;
-    pid_t * pids;
-
-
-} filtroConfig;
 
 
 int contaLinhas(int fd){
@@ -108,6 +98,9 @@ void initServer(){
 }
 
 
+
+
+
 int main(int argc, char ** args){
     
     int fd,hold_fifo;
@@ -120,6 +113,7 @@ int main(int argc, char ** args){
     }
 
     //Leitura da configuração
+    
     int fdConfig = open(CONFIGFILENAME, O_RDONLY, 0666);
 
     int numFiltros = contaLinhas(fdConfig);
@@ -128,6 +122,16 @@ int main(int argc, char ** args){
 
     criaConfigs(configs, numFiltros);
 
+    
+    //Criação das estruturas de controlo
+
+    listTasks emEspera = createListTasks();
+
+    listTasks * aExecutar = createListTasks();
+    
+    
+    
+    //Abertura do Fifo
 
     if( (fd = open(FIFOSERVERCLIENTS, O_RDONLY)) == -1){
             perror("fifo between server and clients Read");
@@ -144,6 +148,7 @@ int main(int argc, char ** args){
 
 
     while(1){
+        
         Request request = createRequest();
         read(fd,request,requestSize());
 

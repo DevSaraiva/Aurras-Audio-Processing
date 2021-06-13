@@ -7,13 +7,13 @@ client: bin/aurras
 GLIB = $(shell pkg-config --cflags --libs glib-2.0)
 
 
-bin/aurrasd: src/aurrasd.c src/task.c src/waitingTasks.c src/request.c headers/task.h headers/waitingTasks.h headers/request.h 
-	gcc -Wall -g -o bin/aurrasd src/aurrasd.c src/task.c src/waitingTasks.c src/request.c $(GLIB)
+bin/aurrasd: src/aurrasd.c src/task.c src/listTasks.c src/request.c headers/task.h headers/listTasks.h headers/request.h headers/status.h headers/filtro.h
+	gcc -Wall -g -o bin/aurrasd src/aurrasd.c src/task.c src/listTasks.c src/request.c src/status.c $(GLIB)
 
 
-bin/aurras: src/aurras.c src/task.c src/waitingTasks.c src/request.c headers/task.h headers/waitingTasks.h headers/request.h 
-	gcc -Wall -g -o bin/aurras src/aurras.c src/task.c src/waitingTasks.c src/request.c $(GLIB)
-
+bin/aurras: src/aurras.c src/task.c src/listTasks.c src/request.c headers/task.h headers/listTasks.h headers/request.h headers/status.h headers/filtro.h
+	gcc -Wall -g -o bin/aurras src/aurras.c src/task.c src/listTasks.c src/request.c src/status.c $(GLIB)
+ 
 
 clean:
 	rm obj/* tmp/* bin/{aurras,aurrasd}

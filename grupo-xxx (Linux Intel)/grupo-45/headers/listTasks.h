@@ -17,7 +17,7 @@ void removeTaskIndex(listTasks wTasks, int index);
 
 Task getTaskIndex(listTasks wTasks, int index);
 
-int getNumberListTasks(listTasks wTasks);
+int getSizeListTasks(listTasks wTasks);
 
 void deleteListTasks(listTasks wTasks);
 
