@@ -20,12 +20,6 @@ struct answer{
 };
 
 
-Answer mallocAnswer(){
-    return malloc(sizeof(struct answer));
-}
-
-
-
 Answer createAnswer2(FiltersConfig filtersConfig, ListTasks runningTasks){
     int i;
     char* identificador;

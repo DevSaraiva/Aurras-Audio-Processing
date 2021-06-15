@@ -20,7 +20,9 @@ struct request{
     Métodos auxiliares
     -------------
 */
-
+int getNumberFiltersRequest(Request request){
+    return (request->numberArguments) - 3;
+}
 
 char* getInputFile(Request request){
     if(request->service == 2) return NULL;
@@ -35,11 +37,10 @@ char* getOutputFile(Request request){
 char** getFilters(Request request){
     int i;
     if(request->service == 2) return NULL;
-    char** filters = malloc(sizeof(char*) * (request->numberArguments)); 
+    char** filters = malloc(sizeof(char*) * ((request->numberArguments)-3)); 
 
     for(i=3;i<request->numberArguments;i++){
-        filters[i-3] = malloc(sizeof(char) * strlen(request->arguments[i]));
-        strcat(filters[i-3],request->arguments[i]);
+        filters[i-3] = strdup(request->arguments[i]);  
     }
     return filters;
 }
@@ -51,7 +52,7 @@ Request createRequest(){
 
 
 Request initRequest(int argc, char** argv, int pidProcess){
-    int i;
+  int i;
     if(argc < 2) return NULL;
 
     Request request = (Request) malloc(sizeof(struct request));

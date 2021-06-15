@@ -11,6 +11,7 @@
 #include "../headers/listTasks.h"
 #include "../headers/task.h"
 #include "../headers/filtersConfig.h"
+#include "../headers/processMusic.h"
 
 #define FIFOSERVERCLIENTS "/tmp/fifo"
 #define CONFIGFILENAME "../etc/aurrasd.conf"
@@ -119,15 +120,9 @@ void initServer(){
 }
 
 int main(int argc, char ** args){
-    int fd;
-    setbuf(stdout,NULL);
+    int fd,hold_fifo;
 
     unlink(FIFOSERVERCLIENTS);
-
-    if(mkfifo(FIFOSERVERCLIENTS, 0666) == -1){
-            perror("fifo between server and clients");
-
-    }
 
     if(mkfifo(FIFOSERVERCLIENTS, 0666) == -1){
             perror("fifo between server and clients");
@@ -137,7 +132,6 @@ int main(int argc, char ** args){
     /*
      * Guardar a informação sobre os filtros do ficheiros config
      * */
-    
     FiltersConfig filtersConfig = readConfigFile();
 
     //printFilterConfig(filtersConfig);
@@ -146,18 +140,20 @@ int main(int argc, char ** args){
             perror("fifo between server and clients Read");
     }
 
+    if( ( hold_fifo = open(FIFOSERVERCLIENTS, O_WRONLY)) == -1){
+            perror("fifo between server and clients Write");
+    }
     /*
      * Abrimos a extremidade de escrita do pipe que comunica com os clientes
      * para que caso nenhum cliente esteja associado ao servidor este pipe não desapareça
      * */
-    
-    /* Lista de tasks em espera */
-    ListTasks waittingTask = createListTasks();
+
+
     /* Lista de tasks em execucao */
     ListTasks runningTasks = createListTasks();
 
     /* Lista de tasks em espera */
-//    ListTasks waitingTasks = createListTasks();
+    ListTasks waitingTasks = createListTasks();
 
 
     while(1){
@@ -166,18 +162,55 @@ int main(int argc, char ** args){
         char pipeClient[30];
         int pipeAnswer;
         Task task;
+        int* filtersRequired;
+        int validateTask;
+        int numberExecs;
 
         Request request = createRequest();
         read(fd,request,requestSize());
 
         switch(getRequestService(request)){
             case 1:
+                printRequest(request);
                 task = createTask(request,filtersConfig);
                 setNumberTask(task, numberOfTasks++);
 
-                /* Apenas para teste do status*/
-                addTask(runningTasks,task);
-                //updateFiltersConfig(filtersConfig,task);
+                //printTask(task);
+
+
+                filtersRequired = getFiltersRequired(task);
+
+                validateTask = validateTaskProcessing(filtersConfig,filtersRequired);
+
+                if(validateTask == -1){
+                    addTask(waitingTasks,task);
+                }
+                else if(validateTask == 1){
+                    addTask(runningTasks,task);
+                    updateFiltersConfig(filtersConfig,filtersRequired,1);
+                    numberExecs = getNumberFiltersTask(task);
+
+                    if((pid = fork()) == 0){
+                        //fazer o processamento pedido
+                        char** execsFilters = getExecsFilters(task, filtersConfig);
+                        processMusic(getInputFile(request), getOutputFile(request), execsFilters,numberExecs);
+                    }
+                    else{
+                        /*
+                         * O terminated_pid é o identificador do processo filho que terminou
+                         * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
+                         * */
+                        terminated_pid = wait(&status);
+
+                        /*
+                         * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
+                         * */
+                        printf(": %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
+                    }
+
+                }
+
+                /* Atualizar o filterConfig com os filtros que passam a ser utilizados */
 
                 // O servidor tem de ir buscar o estado atual do servidor e enviar para o client
                 // A leitura do estado tem de ser uma operação atómica
@@ -193,12 +226,11 @@ int main(int argc, char ** args){
                 char filtrosRequest[numfilters] = filtersNeeded(request);
                 filtersExist(filtrosRequest);
 */
-                
-                break;
+               break;
 
             case 2:
 
-                    if((pid = fork()) == 0){
+             if((pid = fork()) == 0){
 
                         sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
 
@@ -212,15 +244,11 @@ int main(int argc, char ** args){
                     
                     }
 
-               
-                break;
-
-
         }
     }
 
     close(fd);
-
+    close(hold_fifo);
 
     return 0;
 

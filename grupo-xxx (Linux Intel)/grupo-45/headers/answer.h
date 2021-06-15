@@ -20,6 +20,4 @@ void printAnswer(Answer answer);
 
 char* getMessageAnswer(Answer answer);
 
-Answer mallocAnswer();
-
 #endif

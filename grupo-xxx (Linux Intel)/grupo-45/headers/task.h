@@ -20,7 +20,13 @@ Task createTask(Request request,FiltersConfig filterConfig);
 
 void setNumberTask(Task task, int numberTask);
 
-int getFilter(Task task, int indexFilter);
+int getFilterRequiredIndex(Task task, int indexFilter);
+
+int getNumberFiltersTask(Task task);
+
+char** getExecsFilters(Task task, FiltersConfig filterConfig);
+
+int* getFiltersRequired(Task task);
 
 int getNumberTask(Task task);
 

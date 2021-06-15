@@ -14,9 +14,17 @@ Filter createFilter();
 
 char* getIdentificadorFilter(Filter filter);
 
+char* getExecFilter(Filter filter);
+
 int getMaxExecucaoFilter(Filter filter);
 
 int getEmExecucaoFilter(Filter filter);
+
+int getDisponivelFilter(Filter filter);
+
+void addEmExecucaoFilter(Filter filter, int emExecucao);
+
+void removeEmExecucaoFilter(Filter filter, int emExecucao);
 
 void setIdentificadorFilter(Filter filter, char* identificador);
 
@@ -34,6 +42,10 @@ void addFilterConfig(FiltersConfig fConfig, Filter filter);
 Filter getFilterConfigIndex(FiltersConfig fConfig, int index);
 
 int getNumberFiltersConfig(FiltersConfig fConfig);
+
+int validateTaskProcessing(FiltersConfig fConfig ,int fitersRequired[]);
+
+void updateFiltersConfig(FiltersConfig fConfig, int filterRequired[], int update);
 
 void deleteFiltersConfig(FiltersConfig fConfig);
 

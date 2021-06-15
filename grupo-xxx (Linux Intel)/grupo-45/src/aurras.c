@@ -61,7 +61,7 @@ int main(int argc,char ** args){
             perror("fifo between server and clients Read");
     }
 
-    Answer a = mallocAnswer();
+    Answer a = malloc(sizeof(answerSize()));
     read(pipeAnswer,a,answerSize());
     printAnswer(a);
 
