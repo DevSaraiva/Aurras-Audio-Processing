@@ -119,9 +119,15 @@ void initServer(){
 }
 
 int main(int argc, char ** args){
-    int fd,hold_fifo;
+    int fd;
+    setbuf(stdout,NULL);
 
     unlink(FIFOSERVERCLIENTS);
+
+    if(mkfifo(FIFOSERVERCLIENTS, 0666) == -1){
+            perror("fifo between server and clients");
+
+    }
 
     if(mkfifo(FIFOSERVERCLIENTS, 0666) == -1){
             perror("fifo between server and clients");
@@ -131,6 +137,7 @@ int main(int argc, char ** args){
     /*
      * Guardar a informação sobre os filtros do ficheiros config
      * */
+    
     FiltersConfig filtersConfig = readConfigFile();
 
     //printFilterConfig(filtersConfig);
@@ -139,14 +146,12 @@ int main(int argc, char ** args){
             perror("fifo between server and clients Read");
     }
 
-    if( ( hold_fifo = open(FIFOSERVERCLIENTS, O_WRONLY)) == -1){
-            perror("fifo between server and clients Write");
-    }
     /*
      * Abrimos a extremidade de escrita do pipe que comunica com os clientes
      * para que caso nenhum cliente esteja associado ao servidor este pipe não desapareça
      * */
-
+    
+    /* Lista de tasks em espera */
     ListTasks waittingTask = createListTasks();
     /* Lista de tasks em execucao */
     ListTasks runningTasks = createListTasks();
@@ -170,11 +175,9 @@ int main(int argc, char ** args){
                 task = createTask(request,filtersConfig);
                 setNumberTask(task, numberOfTasks++);
 
-                //printTask(task);
-
                 /* Apenas para teste do status*/
                 addTask(runningTasks,task);
-                updateFiltersConfig(filtersConfig,task);
+                //updateFiltersConfig(filtersConfig,task);
 
                 // O servidor tem de ir buscar o estado atual do servidor e enviar para o client
                 // A leitura do estado tem de ser uma operação atómica
@@ -190,75 +193,34 @@ int main(int argc, char ** args){
                 char filtrosRequest[numfilters] = filtersNeeded(request);
                 filtersExist(filtrosRequest);
 */
-                if((pid = fork()) == 0){
-                    //fazer o processamento pedido
-
-
-                }
-                else{
-                    /*
-                     * O terminated_pid é o identificador do processo filho que terminou
-                     * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
-                     * */
-                    terminated_pid = wait(&status);
-
-                    /*
-                     * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
-                     * */
-                    printf("terminated_pid: %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
-                }
+                
                 break;
 
             case 2:
 
-                sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
+                    if((pid = fork()) == 0){
 
-                if( (pipeAnswer = open(FIFOSERVERCLIENTS, O_RDONLY)) == -1){
-                        perror("fifo between server and clients Read");
-                }
+                        sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
 
-                Answer answer = createAnswer(filtersConfig,runningTasks);
-                printAnswer(answer);
-                write(pipeAnswer,answer,answerSize(answer));
+                        if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
+                                perror("fifo between server and clients Read");
+                        }
 
+                        Answer answer = createAnswer2(filtersConfig,runningTasks);
+                    
+                        write(pipeAnswer,answer,answerSize());
+                    
+                    }
 
-                if((pid = fork()) == 0){
-                    //enviar o status para o processo cliente
-                    /*
-                     * Construir a mensagem de status a enviar ao cliente
-                     * */
-
-                    /*
-                     * Construir a ligação entre o servidor e o cliente que pediu o status
-                     * */
-                    /*
-                     * Enviar o status
-                     * */
-                    _exit(0);
-                }
-                else{
-
-                    /*
-                     * O terminated_pid é o identificador do processo filho que terminou
-                     * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
-                     * */
-                    terminated_pid = wait(&status);
-
-                    /*
-                     * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
-                     * */
-                    printf("terminated_pid: %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
-                }
+               
                 break;
 
-            default:
-                printf("Nothing");
 
         }
     }
 
     close(fd);
-    close(hold_fifo);
+
 
     return 0;
 

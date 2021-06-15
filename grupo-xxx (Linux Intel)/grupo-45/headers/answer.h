@@ -7,17 +7,19 @@
 
 typedef struct answer *Answer;
 
-Answer createAnswer(FiltersConfig filtersConfig, ListTasks runningTasks);
+Answer createAnswer2(FiltersConfig filtersConfig, ListTasks runningTasks);
 
 void deleteAnswer(Answer answer);
 
 
 /* --- Functionality --------------------------------------------- */
 
-int answerSize(Answer answer);
+int answerSize();
 
 void printAnswer(Answer answer);
 
 char* getMessageAnswer(Answer answer);
+
+Answer mallocAnswer();
 
 #endif

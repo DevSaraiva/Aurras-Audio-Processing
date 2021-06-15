@@ -89,11 +89,7 @@ int getNumberFiltersConfig(FiltersConfig fConfig){
 
 /* TODO fazer update dos filtros em uso dada uma task */
 void updateFiltersConfig(FiltersConfig fConfig, Task task, int update){
-    task->
-    if(update == 1){
-
-
-    }
+    
 }
 
 void deleteFiltersConfig(FiltersConfig fConfig){
