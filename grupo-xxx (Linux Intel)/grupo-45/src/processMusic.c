@@ -23,10 +23,13 @@ int processMusic(char* inputFileName, char* outputFileName, char** args, int num
     int status;
     int fdInput;
     int fdOutput;
+    int ret;
 
     /*
      * Separar os argumentos e os comandos por um array com 2 dimensões: dimensão 1 -> comando; dimensão 2 -> argumentos do comando
      * */
+
+
     for(a=0;a<numberArgs;a++){
         /*
          * Copiar a string com os comandos recebida por parâmetro nesta função
@@ -50,7 +53,53 @@ int processMusic(char* inputFileName, char* outputFileName, char** args, int num
         exec_args[a][i] = NULL;
     }
 
-    number_of_commands = a;
+    number_of_commands = numberArgs;
+
+    /*
+     * Reproduz o comportamento da system() no caso de ter apenas um executável
+     * */
+
+    if(number_of_commands == 1){
+        /*
+         * Para ser mais eficiente: se não sei o número de arrgumentos do executável que pretendo correr então deveria alocar memória das strings
+         * Usar realloc
+         * Neste caso defino como sendo 20 o número máximo de argumentos
+         * Este array tem todos os argumentos do executavel que pretendo correr este é precisamente um dos argumentos a passar no execv(execvp), por isso aqui estou já a dizer que vou usar o execv (ou execvp) para executar o programa
+         * */
+        fdInput = open(inputFileName,O_RDONLY,0666);
+
+        if(fdInput == -1){
+            perror("Erro na abertura do ficheiro de audio de input:");
+            return -1;
+        }
+        dup2(fdInput,0);
+        close(fdInput);
+
+        /*
+         * Redirecionar o stdout para o ficheiro de output
+         * */
+        fdOutput = open(outputFileName,O_WRONLY | O_CREAT,0666);
+        if(fdOutput == -1){
+            perror("Erro na abertura de um ficheiro de Output:");
+            return -1;
+        }
+        dup2(fdOutput,1);
+        close(fdOutput);
+
+        /*
+         * Crio um filho para executar o executável que pretendo correr e assim o processo pai poder retornar para a função que chamou a mySystem e continuar a executar o codigo
+         * */
+        if( (pid = fork()) == 0 ){
+            ret = execvp(exec_args[0][0],exec_args[0]);
+            perror("processo filho errou: ");
+            _exit(ret);
+        }
+        else{
+            wait(&status);
+        }
+        return 0;
+    }
+
     /*
      * Vamos ter N comandos, por isso temos N-1 pipes e cada pipe tem 2 descritores(leitura e escrita)
      * */

@@ -55,7 +55,7 @@ int main(int argc,char ** args){
      * Obter resposta do servidor
      * */
 
-    
+
 
     if( (pipeAnswer = open(pipeClient, O_RDONLY)) == -1){
             perror("fifo between server and clients Read");
@@ -69,7 +69,7 @@ int main(int argc,char ** args){
     close(pipeRequest);
     close(pipeAnswer);
     unlink(pipeClient);
-    
+
 
     return 0;
 }
