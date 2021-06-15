@@ -3,8 +3,10 @@
 #include "../headers/task.h"
 #include "../headers/request.h"
 #include "../headers/filtersConfig.h"
+#include "../headers/answer.h"
 
 #define MAXFILTERS 40
+#define FIFOSERVERCLIENTS "/tmp/fifo"
 /*
  * struct com informação da tarefa que está na lista de espera para executar
  *  -> Numero da task
@@ -12,6 +14,9 @@
  *  -> filtros necessários [lista] indice 0 corresponde ao filtro 0, indice 1 ...
  * -> comando passado pelo cliente
  * */
+
+
+
 struct task{
     int numberTask; // Numero de ordem da task
     int pidProcess;
@@ -119,6 +124,37 @@ char* getComando(Task task){
 
 int getPidProcessTask(Task task){
     return task->pidProcess;
+}
+
+
+int validateTaskProcessing(FiltersConfig fConfig ,Task t){
+    int i;
+    int filterDisponivel;
+    int * filtersRequired = getFiltersRequired(t);
+    int pipeAnswer = 0;
+    char pipeClient[30];
+
+    // Colocar os filtros da task em execução
+    for(i=0; i<getNumberFiltersConfig(fConfig); i++){
+        Filter filter = getFilterConfigIndex(fConfig,i);
+        filterDisponivel = getDisponivelFilter(filter);
+        if(filterDisponivel < filtersRequired[i]){
+            return -1;
+        }
+    }
+
+    sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getPidProcessTask(t));
+
+        if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
+            perror("fifo between server and clients Read");
+        }
+    
+    Answer a = createAnswer1(2);
+
+    write(pipeAnswer,a,answerSize());
+
+
+    return 1;
 }
 
 

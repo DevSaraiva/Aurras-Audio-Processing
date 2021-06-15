@@ -106,23 +106,8 @@ int getNumberFiltersConfig(FiltersConfig fConfig){
 }
 
 
-int validateTaskProcessing(FiltersConfig fConfig ,int filtersRequired[]){
-    int i;
-    int filterDisponivel;
 
-    // Colocar os filtros da task em execução
-    for(i=0; i<fConfig->numberFilters; i++){
-        Filter filter = getFilterConfigIndex(fConfig,i);
-        filterDisponivel = getDisponivelFilter(filter);
-        if(filterDisponivel < filtersRequired[i]){
-            return -1;
-        }
-    }
-
-    return 1;
-}
-
-void updateFiltersConfig(FiltersConfig fConfig, int filtersRequired[], int update){
+void updateFiltersConfig(FiltersConfig fConfig, int * filtersRequired, int update){
     int i;
 
     if(update == 1){

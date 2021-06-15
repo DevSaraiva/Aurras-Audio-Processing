@@ -124,6 +124,8 @@ int main(int argc, char ** args){
 
     unlink(FIFOSERVERCLIENTS);
 
+    setbuf(stdout,NULL);
+
     if(mkfifo(FIFOSERVERCLIENTS, 0666) == -1){
             perror("fifo between server and clients");
 
@@ -157,8 +159,7 @@ int main(int argc, char ** args){
 
 
     while(1){
-        pid_t pid,terminated_pid;
-        int status;
+        pid_t pid;
         char pipeClient[30];
         int pipeAnswer;
         Task task;
@@ -171,19 +172,29 @@ int main(int argc, char ** args){
 
         switch(getRequestService(request)){
             case 1:
+
+                sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
+
+                        if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
+                                perror("fifo between server and clients Read");
+                        }
+
+
                 printRequest(request);
                 task = createTask(request,filtersConfig);
                 setNumberTask(task, numberOfTasks++);
 
-                //printTask(task);
-
 
                 filtersRequired = getFiltersRequired(task);
 
-                validateTask = validateTaskProcessing(filtersConfig,filtersRequired);
+                validateTask = validateTaskProcessing(filtersConfig,task);
 
                 if(validateTask == -1){
+                    //adiciona à lista de espera e informa o cliente
                     addTask(waitingTasks,task);
+                    Answer a = createAnswer1(1);
+                    write(pipeAnswer,a,answerSize());
+                    
                 }
                 else if(validateTask == 1){
                     addTask(runningTasks,task);
@@ -194,19 +205,9 @@ int main(int argc, char ** args){
                         //fazer o processamento pedido
                         char** execsFilters = getExecsFilters(task, filtersConfig);
                         processMusic(getInputFile(request), getOutputFile(request), execsFilters,numberExecs);
+                        _exit(0);
                     }
-                    else{
-                        /*
-                         * O terminated_pid é o identificador do processo filho que terminou
-                         * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
-                         * */
-                        terminated_pid = wait(&status);
-
-                        /*
-                         * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
-                         * */
-                        printf(": %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
-                    }
+                    
 
                 }
 

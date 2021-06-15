@@ -43,8 +43,6 @@ Filter getFilterConfigIndex(FiltersConfig fConfig, int index);
 
 int getNumberFiltersConfig(FiltersConfig fConfig);
 
-int validateTaskProcessing(FiltersConfig fConfig ,int fitersRequired[]);
-
 void updateFiltersConfig(FiltersConfig fConfig, int filterRequired[], int update);
 
 void deleteFiltersConfig(FiltersConfig fConfig);

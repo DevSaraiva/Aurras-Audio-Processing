@@ -19,6 +19,22 @@ struct answer{
     char message[MAXSIZEMESSAGE];
 };
 
+Answer createAnswer1(int x){
+
+    Answer answer = (Answer) malloc(sizeof(struct answer));
+
+    if(x == 1){
+        sprintf(answer->message,"pending");
+    }else{
+        sprintf(answer->message,"processing");
+    }
+
+    return answer;
+}
+
+
+
+
 
 Answer createAnswer2(FiltersConfig filtersConfig, ListTasks runningTasks){
     int i;
