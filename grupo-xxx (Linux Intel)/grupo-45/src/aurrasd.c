@@ -11,6 +11,7 @@
 #include "../headers/listTasks.h"
 #include "../headers/task.h"
 #include "../headers/filtersConfig.h"
+#include "../headers/processMusic.h"
 
 #define FIFOSERVERCLIENTS "/tmp/fifo"
 #define CONFIGFILENAME "../etc/aurrasd.conf"
@@ -152,7 +153,7 @@ int main(int argc, char ** args){
     ListTasks runningTasks = createListTasks();
 
     /* Lista de tasks em espera */
-//    ListTasks waitingTasks = createListTasks();
+    ListTasks waitingTasks = createListTasks();
 
 
     while(1){
@@ -161,20 +162,56 @@ int main(int argc, char ** args){
         char pipeClient[30];
         int pipeAnswer;
         Task task;
+        int* filtersRequired;
+        int validateTask;
+        int numberExecs;
 
         Request request = createRequest();
         read(fd,request,requestSize());
 
         switch(getRequestService(request)){
             case 1:
+                printRequest(request);
                 task = createTask(request,filtersConfig);
                 setNumberTask(task, numberOfTasks++);
 
                 //printTask(task);
 
-                /* Apenas para teste do status*/
-                addTask(runningTasks,task);
-                updateFiltersConfig(filtersConfig,task);
+
+                filtersRequired = getFiltersRequired(task);
+
+                validateTask = validateTaskProcessing(filtersConfig,filtersRequired);
+
+                printf("validatask:%d\n",validateTask);
+                if(validateTask == -1){
+                    addTask(waitingTasks,task);
+                }
+                else if(validateTask == 1){
+                    addTask(runningTasks,task);
+                    updateFiltersConfig(filtersConfig,filtersRequired,1);
+                    numberExecs = getNumberFiltersTask(task);
+
+                    if((pid = fork()) == 0){
+                        //fazer o processamento pedido
+                        char** execsFilters = getExecsFilters(task, filtersConfig);
+                        processMusic(getInputFile(request), getOutputFile(request), execsFilters,numberExecs);
+                    }
+                    else{
+                        /*
+                         * O terminated_pid é o identificador do processo filho que terminou
+                         * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
+                         * */
+                        terminated_pid = wait(&status);
+
+                        /*
+                         * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
+                         * */
+                        printf(": %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
+                    }
+
+                }
+
+                /* Atualizar o filterConfig com os filtros que passam a ser utilizados */
 
                 // O servidor tem de ir buscar o estado atual do servidor e enviar para o client
                 // A leitura do estado tem de ser uma operação atómica
@@ -190,24 +227,7 @@ int main(int argc, char ** args){
                 char filtrosRequest[numfilters] = filtersNeeded(request);
                 filtersExist(filtrosRequest);
 */
-                if((pid = fork()) == 0){
-                    //fazer o processamento pedido
-
-
-                }
-                else{
-                    /*
-                     * O terminated_pid é o identificador do processo filho que terminou
-                     * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
-                     * */
-                    terminated_pid = wait(&status);
-
-                    /*
-                     * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
-                     * */
-                    printf("terminated_pid: %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
-                }
-                break;
+               break;
 
             case 2:
 
@@ -219,7 +239,7 @@ int main(int argc, char ** args){
 
                 Answer answer = createAnswer(filtersConfig,runningTasks);
                 printAnswer(answer);
-                write(pipeAnswer,answer,answerSize(answer));
+                write(pipeAnswer,answer,answerSize());
 
 
                 if((pid = fork()) == 0){

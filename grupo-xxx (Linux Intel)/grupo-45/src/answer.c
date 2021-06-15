@@ -64,7 +64,7 @@ char* getMessageAnswer(Answer answer){
     Funcionalidades
     -------------
 */
-int answerSize(Answer answer){
+int answerSize(){
     return sizeof(struct answer);
 }
 

@@ -10,7 +10,7 @@ struct filter{
     char * executavel;
     int numeroMaxExecucao;
     int emExecucao;
-    pid_t * pids;  
+    pid_t * pids;
 };
 
 
@@ -28,12 +28,30 @@ char* getIdentificadorFilter(Filter filter){
     return strdup(filter->identificador);
 }
 
+char* getExecFilter(Filter filter){
+    return strdup(filter->executavel);
+}
+
 int getMaxExecucaoFilter(Filter filter){
     return filter->numeroMaxExecucao;
 }
 
 int getEmExecucaoFilter(Filter filter){
     return filter->emExecucao;
+}
+
+int getDisponivelFilter(Filter filter){
+    return (filter->numeroMaxExecucao)-(filter->emExecucao);
+}
+
+void addEmExecucaoFilter(Filter filter, int emExecucao){
+    int execucaoFilter = filter->emExecucao;
+    filter->emExecucao = emExecucao + execucaoFilter;
+}
+
+void removeEmExecucaoFilter(Filter filter, int emExecucao){
+    int execucaoFilter = filter->emExecucao;
+    filter->emExecucao = execucaoFilter - emExecucao;
 }
 
 void setIdentificadorFilter(Filter filter, char* identificador){
@@ -87,14 +105,43 @@ int getNumberFiltersConfig(FiltersConfig fConfig){
     return (int)fConfig->filters->len;
 }
 
-/* TODO fazer update dos filtros em uso dada uma task */
-void updateFiltersConfig(FiltersConfig fConfig, Task task, int update){
-    task->
-    if(update == 1){
 
+int validateTaskProcessing(FiltersConfig fConfig ,int filtersRequired[]){
+    int i;
+    int filterDisponivel;
+
+    // Colocar os filtros da task em execução
+    for(i=0; i<fConfig->numberFilters; i++){
+        Filter filter = getFilterConfigIndex(fConfig,i);
+        filterDisponivel = getDisponivelFilter(filter);
+        if(filterDisponivel < filtersRequired[i]){
+            return -1;
+        }
+    }
+
+    return 1;
+}
+
+void updateFiltersConfig(FiltersConfig fConfig, int filtersRequired[], int update){
+    int i;
+
+    if(update == 1){
+        // Colocar os filtros da task em execução
+        for(i=0; i<fConfig->numberFilters; i++){
+            Filter filter = getFilterConfigIndex(fConfig,i);
+            addEmExecucaoFilter(filter, filtersRequired[i]);
+        }
+    }
+    else if(update == -1){
+         // Colocar os filtros da task em execução
+        for(i=0; i<fConfig->numberFilters; i++){
+            Filter filter = getFilterConfigIndex(fConfig,i);
+            removeEmExecucaoFilter(filter, filtersRequired[i]);
+        }
 
     }
 }
+
 
 void deleteFiltersConfig(FiltersConfig fConfig){
     g_ptr_array_free(fConfig->filters,TRUE);

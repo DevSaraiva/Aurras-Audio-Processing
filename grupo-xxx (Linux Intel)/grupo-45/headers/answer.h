@@ -14,7 +14,7 @@ void deleteAnswer(Answer answer);
 
 /* --- Functionality --------------------------------------------- */
 
-int answerSize(Answer answer);
+int answerSize();
 
 void printAnswer(Answer answer);
 

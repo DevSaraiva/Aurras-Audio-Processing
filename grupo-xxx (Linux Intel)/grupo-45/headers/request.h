@@ -17,9 +17,15 @@ void deleteRequest(Request request);
 
 char getRequestService(Request request);
 
+int getNumberFiltersRequest(Request request);
+
 int getRequestPidProcess(Request request);
 
 char* getRequestArgs(Request request);
+
+char* getOutputFile(Request request);
+
+char* getInputFile(Request request);
 
 
 /* --- Functionality --------------------------------------------- */
