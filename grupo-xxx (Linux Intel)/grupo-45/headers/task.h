@@ -2,6 +2,8 @@
 #define FILE_TASK_SEEN
 
 #include <glib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "../headers/request.h"
 #include "../headers/filtersConfig.h"
 
@@ -37,5 +39,8 @@ int getPidProcessTask(Task task);
 void deleteTask(Task task);
 
 void printTask(Task task);
+
+int validateTaskProcessing(FiltersConfig fConfig ,Task t);
+
 
 #endif
