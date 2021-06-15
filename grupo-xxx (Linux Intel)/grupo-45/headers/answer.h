@@ -7,7 +7,7 @@
 
 typedef struct answer *Answer;
 
-Answer createAnswer(FiltersConfig filtersConfig, ListTasks runningTasks);
+Answer createAnswer2(FiltersConfig filtersConfig, ListTasks runningTasks);
 
 void deleteAnswer(Answer answer);
 

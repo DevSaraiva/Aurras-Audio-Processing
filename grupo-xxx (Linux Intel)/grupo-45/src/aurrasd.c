@@ -182,7 +182,6 @@ int main(int argc, char ** args){
 
                 validateTask = validateTaskProcessing(filtersConfig,filtersRequired);
 
-                printf("validatask:%d\n",validateTask);
                 if(validateTask == -1){
                     addTask(waitingTasks,task);
                 }
@@ -231,48 +230,19 @@ int main(int argc, char ** args){
 
             case 2:
 
+             if((pid = fork()) == 0){
+
                 sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
 
-                if( (pipeAnswer = open(FIFOSERVERCLIENTS, O_RDONLY)) == -1){
-                        perror("fifo between server and clients Read");
+                if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
+                    perror("fifo between server and clients Read");
                 }
 
-                Answer answer = createAnswer(filtersConfig,runningTasks);
-                printAnswer(answer);
+                Answer answer = createAnswer2(filtersConfig,runningTasks);
+                  
                 write(pipeAnswer,answer,answerSize());
-
-
-                if((pid = fork()) == 0){
-                    //enviar o status para o processo cliente
-                    /*
-                     * Construir a mensagem de status a enviar ao cliente
-                     * */
-
-                    /*
-                     * Construir a ligação entre o servidor e o cliente que pediu o status
-                     * */
-                    /*
-                     * Enviar o status
-                     * */
-                    _exit(0);
-                }
-                else{
-
-                    /*
-                     * O terminated_pid é o identificador do processo filho que terminou
-                     * o WEXITSTATUS(status) permite ver o codigo de saída do filho, como temos _exit(0) se tudo correr bem será 0
-                     * */
-                    terminated_pid = wait(&status);
-
-                    /*
-                     * waitpid(pid,&status,0) <- isto permitia que este processo esperasse pelo processo com o idenitificador igual a pid
-                     * */
-                    printf("terminated_pid: %d  |  exit_status: %d \n", terminated_pid,WEXITSTATUS(status));
-                }
-                break;
-
-            default:
-                printf("Nothing");
+                    
+            }
 
         }
     }
