@@ -26,6 +26,10 @@ char* getRequestArgs(Request request);
 
 int requestSize();
 
+char** getFilters(Request request);
+
 void printRequest(Request request);
+
+char* getMessage(Request request);
 
 #endif

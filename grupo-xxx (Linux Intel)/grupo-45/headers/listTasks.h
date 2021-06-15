@@ -4,21 +4,21 @@
 #include "../headers/task.h"
 #include <glib.h>
 
-typedef struct listTaskSv *listTasks;
+typedef struct listTaskSv *ListTasks;
 
 /*
  * Create list of tasks
  * */
-listTasks createListTasks();
+ListTasks createListTasks();
 
-void addTask(listTasks wTasks, Task task);
+void addTask(ListTasks wTasks, Task task);
 
-void removeTaskIndex(listTasks wTasks, int index);
+void removeTaskIndex(ListTasks wTasks, int index);
 
-Task getTaskIndex(listTasks wTasks, int index);
+Task getTaskIndex(ListTasks wTasks, int index);
 
-int getNumberListTasks(listTasks wTasks);
+int getNumberListTasks(ListTasks wTasks);
 
-void deleteListTasks(listTasks wTasks);
+void deleteListTasks(ListTasks wTasks);
 
 #endif

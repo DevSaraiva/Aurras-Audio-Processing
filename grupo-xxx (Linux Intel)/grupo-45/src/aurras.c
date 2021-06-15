@@ -11,11 +11,12 @@
 #define FIFOSERVERCLIENTS "/tmp/fifo"
 
 
-
 int main(int argc,char ** args){
-
+    int pipeAnswer;
+    int pipeRequest;
+    char pipeClient[30];
     pid_t pidProcess = getpid();
-    
+
     /*
      * Criar o request para enviar ao servidor
      * */
@@ -32,14 +33,33 @@ int main(int argc,char ** args){
     /*
      * Mostrar ao cliente o serviço que acabou de pedir
      * */
-    printRequest(request);
-    int fd = open(FIFOSERVERCLIENTS, O_WRONLY);
+    pipeRequest = open(FIFOSERVERCLIENTS, O_WRONLY);
 
     /*
      * Enviar request ao servidor
      * */
-    write(fd,request,requestSize());
+    write(pipeRequest,request,requestSize());
 
-    close(fd);
+    /*
+     * Obter resposta do servidor
+     * */
+    sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,pidProcess);
+
+
+    if(mkfifo(pipeClient, 0666) == -1){
+        perror("pipe de resposta do servidor ao cliente");
+
+    }
+
+    if( (pipeAnswer = open(FIFOSERVERCLIENTS, O_RDONLY)) == -1){
+            perror("fifo between server and clients Read");
+    }
+
+
+    unlink(pipeClient);
+
+    close(pipeRequest);
+    close(pipeAnswer);
+
     return 0;
 }
