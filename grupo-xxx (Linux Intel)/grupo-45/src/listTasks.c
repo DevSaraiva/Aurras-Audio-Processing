@@ -15,37 +15,37 @@ struct listTaskSv{
     int numberTasks; // Numero de ordem da task
 };
 
-listTasks createListTasks(){
-    listTasks lTasks = malloc(sizeof(struct listTaskSv));
+ListTasks createListTasks(){
+    ListTasks wTasks = malloc(sizeof(struct listTaskSv));
 
-    lTasks->listTasks = g_ptr_array_new();
-    lTasks->numberTasks = 0;
+    wTasks->listTasks = g_ptr_array_new();
+    wTasks->numberTasks = 0;
 
-    return lTasks;
+    return wTasks;
 }
 
-void addTask(listTasks wTasks, Task task){
+void addTask(ListTasks wTasks, Task task){
     // TODO fazer antes uma cópia da task
     g_ptr_array_add(wTasks->listTasks , (gpointer) task);
     wTasks->numberTasks++;
 }
 
-void removeTaskIndex(listTasks wTasks, int index){
+void removeTaskIndex(ListTasks wTasks, int index){
     g_ptr_array_remove_index(wTasks->listTasks ,index);
     wTasks->numberTasks--;
 }
 
-Task getTaskIndex(listTasks wTasks, int index){
+Task getTaskIndex(ListTasks wTasks, int index){
     Task task = g_ptr_array_index(wTasks->listTasks,index);
     return task;
 }
 
 
-int getSizeListTasks(listTasks wTasks){
+int getNumberListTasks(ListTasks wTasks){
     return (int)wTasks->listTasks->len;
 }
 
-void deleteListTasks(listTasks wTasks){
+void deleteListTasks(ListTasks wTasks){
     g_ptr_array_free(wTasks->listTasks,TRUE);
 }
 

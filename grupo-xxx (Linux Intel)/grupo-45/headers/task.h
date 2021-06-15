@@ -2,27 +2,34 @@
 #define FILE_TASK_SEEN
 
 #include <glib.h>
+#include "../headers/request.h"
+#include "../headers/filtersConfig.h"
 
 /*
  * Constants
  * */
+#define NUMBERFILTERS 4
+
 typedef struct task *Task;
 
 
 /*
  * Create task
  * */
+Task createTask(Request request,FiltersConfig filterConfig);
 
-Task createTask(int taskNumber, int pidProcess, int filtersRequired[], int numFilters, char * comando);
+void setNumberTask(Task task, int numberTask);
 
 int getFilter(Task task, int indexFilter);
 
 int getNumberTask(Task task);
 
-int getPidProcess(Task task);
+char* getComando(Task task);
+
+int getPidProcessTask(Task task);
 
 void deleteTask(Task task);
 
-char * getComando(Task task);
+void printTask(Task task);
 
 #endif
