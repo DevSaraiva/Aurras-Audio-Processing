@@ -52,7 +52,8 @@ Request createRequest(){
 
 
 Request initRequest(int argc, char** argv, int pidProcess){
-  int i;
+
+    int i;
     if(argc < 2) return NULL;
 
     Request request = (Request) malloc(sizeof(struct request));
@@ -75,7 +76,6 @@ Request initRequest(int argc, char** argv, int pidProcess){
         strcat(request->arguments[i-1],argv[i]);
         request->numberArguments++;
     }
-
     return request;
 }
 

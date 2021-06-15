@@ -233,17 +233,17 @@ int main(int argc, char ** args){
 
              if((pid = fork()) == 0){
 
-                        sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
+                sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
 
-                        if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
-                                perror("fifo between server and clients Read");
-                        }
+                if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
+                    perror("fifo between server and clients Read");
+                }
 
-                        Answer answer = createAnswer2(filtersConfig,runningTasks);
+                Answer answer = createAnswer2(filtersConfig,runningTasks);
+                  
+                write(pipeAnswer,answer,answerSize());
                     
-                        write(pipeAnswer,answer,answerSize());
-                    
-                    }
+            }
 
         }
     }
