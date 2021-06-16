@@ -83,7 +83,13 @@ void deleteAnswer(Answer answer){
     -------------
 */
 char* getMessageAnswer(Answer answer){
-    return strdup(answer->message);
+    
+    char * message = malloc(sizeof(char) * MAXSIZEMESSAGE);
+
+    strcpy(message, answer->message);
+    
+    return message;
+
 }
 
 /*
@@ -96,4 +102,13 @@ int answerSize(){
 
 void printAnswer(Answer answer){
     printf("%s\n",answer->message);
+}
+
+int comparaToEnd(Answer a){
+    
+    int end = 0;
+    if(strcmp("pending",a->message) != 0) end = 1;
+    else end = 0;
+
+    return end;
 }

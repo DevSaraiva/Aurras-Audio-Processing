@@ -134,14 +134,6 @@ void deleteFiltersConfig(FiltersConfig fConfig){
     g_ptr_array_free(fConfig->filters,TRUE);
 }
 
-void printFilterConfig(FiltersConfig fConfig){
-    int i = 0;
 
-    printf("Numero Filtros: %d\n",fConfig->numberFilters);
-    for(i = 0; i<fConfig->numberFilters;i++){
-        printf("------- Filter %d -------\n",i+1);
-        Filter filter = getFilterConfigIndex(fConfig, i);
-        printFilter(filter);
-    }
 
-}
+

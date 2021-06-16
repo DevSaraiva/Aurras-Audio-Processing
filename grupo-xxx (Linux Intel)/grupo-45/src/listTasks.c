@@ -49,3 +49,69 @@ void deleteListTasks(ListTasks wTasks){
     g_ptr_array_free(wTasks->listTasks,TRUE);
 }
 
+int removeTask (ListTasks wTasks,int num){
+    int indiceAremover = -1;
+    for (int i = 0; i < wTasks->numberTasks && indiceAremover == -1;i++){
+        Task aux = getTaskIndex(wTasks,i);
+        if (getNumberTask(aux) == num){
+            indiceAremover = i;
+        }
+    }
+    if (indiceAremover != -1){
+        removeTaskIndex(wTasks,indiceAremover);
+        return 1;
+    } 
+    else return -1;
+}
+
+Task getTask (ListTasks wTasks,int num){
+    Task taskAdevolver = NULL;
+    for (int i = 0; i < wTasks->numberTasks && taskAdevolver != NULL;i++){
+        Task aux = getTaskIndex(wTasks,i);
+        if (getNumberTask(aux) == num){
+            taskAdevolver = aux;
+        }
+    }
+    return taskAdevolver;   
+}
+
+
+
+void processWaitingTasks(ListTasks wTasks, ListTasks runningTasks, FiltersConfig filtersConfig){
+    int i;
+    int* filtersRequired;
+
+    for(i=0;i<wTasks->numberTasks;i++){
+        Task task = getTaskIndex(wTasks,i);
+        int validTask = validateTaskProcessing(filtersConfig,task);
+        if(validTask == 1){
+            /*
+             * Fazer update dos filtros disponíveis
+             * */
+            filtersRequired = getFiltersRequired(task);
+            
+            updateFiltersConfig(filtersConfig,filtersRequired,1);
+            addTask(runningTasks,task);
+            removeTaskIndex(wTasks,i);
+
+            }
+        }
+    }
+
+
+
+ int removeTaskByNumber (ListTasks wTasks,int num){
+    int indiceAremover = -1;
+    for (int i = 0; i < wTasks->numberTasks && indiceAremover == -1;i++){
+        Task aux = getTaskIndex(wTasks,i);
+        if (getNumberTask(aux) == num){
+            indiceAremover = i;
+        }
+    }
+    if (indiceAremover != -1){
+        removeTaskIndex(wTasks,indiceAremover);
+        return 1;
+    } 
+    else return -1;
+}
+

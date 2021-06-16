@@ -22,12 +22,10 @@ int main(int argc,char ** args){
 
     sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,pidProcess);
 
-
     if(mkfifo(pipeClient, 0666) == -1){
         perror("pipe de resposta do servidor ao cliente");
 
     }
-
     /*
      * Criar o request para enviar ao servidor
      * */
@@ -41,7 +39,6 @@ int main(int argc,char ** args){
         return -1;
     }
 
-    printRequest(request);
     /*
      * Mostrar ao cliente o serviço que acabou de pedir
      * */
@@ -62,11 +59,30 @@ int main(int argc,char ** args){
             perror("fifo between server and clients Read");
     }
 
+    int end = 0;
     Answer a = malloc(sizeof(answerSize()));
+    
     read(pipeAnswer,a,answerSize());
+       
+    
+        
+    end = comparaToEnd(a);
+    
+    
+
+    if(end == 0) printAnswer(a);
+
+    while(!end){
+
+        read(pipeAnswer,a,answerSize());
+        
+        end = comparaToEnd(a);
+
+    }
+
     printAnswer(a);
 
-
+    
     close(pipeRequest);
     close(pipeAnswer);
     unlink(pipeClient);

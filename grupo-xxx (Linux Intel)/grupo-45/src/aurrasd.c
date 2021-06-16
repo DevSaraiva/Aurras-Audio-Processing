@@ -17,7 +17,20 @@
 #define CONFIGFILENAME "../etc/aurrasd.conf"
 
 
-static int numberOfTasks = 0;
+int pipeFiltro[2];
+int pipeServidorEntrada[2];
+int pipeServidorSaida[2];
+
+/* Lista de tasks em execucao */
+ListTasks runningTasks;
+
+/* Lista de tasks em espera */
+ListTasks waitingTasks;
+
+
+FiltersConfig filtersConfig;
+
+static int numberOfTasks = 1;
 
 ssize_t readln(int fd, char *line, size_t size){
     size_t size_Line = 0;
@@ -115,10 +128,38 @@ void parse (char * string2, char ** destination){
 
 }
 
+void handler_terminatedProcessing(int signum){
+    /*
+     * Receber um pid de processo
+     * */
+    int numberTask;
+    
+    read(pipeServidorEntrada[0],&numberTask,4);
+
+    Task task = getTask(runningTasks,numberTask);
+    int* filtersRequired = getFiltersRequired(task);
+    /*
+     * Remover a task que foi executada no processo com o pid recebido
+     * */
+    //removeTaskByNumber(runningTasks,numberTask);
+
+    /*
+     * Atualizar os filtros
+     * */
+    //updateFiltersConfig(filtersConfig,filtersRequired,-1);
+
+    /*
+     * Colocar em processamento tasks em espera
+     * */
+    //processWaitingTasks(waitingTasks,runningTasks,filtersConfig);
+}
+
 
 
 int main(int argc, char ** args){
+    
     int fd,hold_fifo;
+    pid_t pid;
 
     unlink(FIFOSERVERCLIENTS);
 
@@ -126,15 +167,29 @@ int main(int argc, char ** args){
 
     if(mkfifo(FIFOSERVERCLIENTS, 0666) == -1){
             perror("fifo between server and clients");
-
     }
+
+    if(signal(SIGUSR1,handler_terminatedProcessing) == SIG_ERR){
+        perror("SIGUSRS failed");
+    }
+
+    if(signal(SIGUSR1,handler_terminatedProcessing) == SIG_ERR){
+        perror("SIGUSRS failed");
+    }
+
+
+    /* Lista de tasks em execucao */
+    ListTasks runningTasks = createListTasks();
+
+    /* Lista de tasks em espera */
+    ListTasks waitingTasks = createListTasks();
+
 
     /*
      * Guardar a informação sobre os filtros do ficheiros config
      * */
-    FiltersConfig filtersConfig = readConfigFile();
+    filtersConfig = readConfigFile();
 
-    //printFilterConfig(filtersConfig);
 
     if( (fd = open(FIFOSERVERCLIENTS, O_RDONLY)) == -1){
             perror("fifo between server and clients Read");
@@ -149,15 +204,57 @@ int main(int argc, char ** args){
      * */
 
 
-    /* Lista de tasks em execucao */
-    ListTasks runningTasks = createListTasks();
+    //Cria filho gestor de processos
+        
+    pipe(pipeFiltro);
+    pipe(pipeServidorEntrada);
+    pipe(pipeServidorSaida);
 
-    /* Lista de tasks em espera */
-    ListTasks waitingTasks = createListTasks();
+    pid_t pai = getpid();
+    
+    
+
+    if((pid = fork()) == 0){
+
+        int taskNumber = 0;
+        int servidorDisponivel = 0;
+
+        close(pipeFiltro[1]);
+        close(pipeServidorEntrada[0]);
+        close(pipeServidorSaida[1]);
+
+        while(1){
+
+            //Recebe o numero da task
+            read(pipeFiltro[0],&taskNumber,4);
+
+            //bloqueia o envio enquanto o servidor esta a tratar um termino
+            read(pipeServidorSaida[0],&servidorDisponivel,4);
+            
+            //Envia para o servidor o numero da task a retirar
+            write(pipeServidorEntrada[1],&taskNumber,4);
+
+            //Envia para o servidor um sinal a avisar que pode ler do pipe
+            kill(pai,SIGUSR1);
+
+        }
+
+    }
 
 
     while(1){
-        pid_t pid;
+        
+        //Fecha a extermidade de leitura do pipe entre os processos que correm os filtros e o intermediario
+        close(pipeFiltro[0]);
+        close(pipeServidorSaida[0]);
+        close(pipeServidorEntrada[1]);
+
+        int on = 1;
+
+        //Sinaliza o processo de controlo sobre a disponiblidade inicial do servidor
+        write(pipeServidorSaida[1], &on, 4);
+
+
         char pipeClient[30];
         int pipeAnswer;
         Task task;
@@ -180,14 +277,14 @@ int main(int argc, char ** args){
                         }
 
 
-                printRequest(request);
+                //printRequest(request);
                 task = createTask(request,filtersConfig);
                 setNumberTask(task, numberOfTasks++);
 
                 filtersRequired = getFiltersRequired(task);
 
                 validateTask = validateTaskProcessing(filtersConfig,task);
-                //printf("%d\n",validateTask);
+
                 if(validateTask == -1){
                     //adiciona à lista de espera e informa o cliente
                     addTask(waitingTasks,task);
@@ -201,9 +298,25 @@ int main(int argc, char ** args){
                     numberExecs = getNumberFiltersTask(task);
 
                     if((pid = fork()) == 0){
+                        
+                        //fecha o pipe que liga o processo intermediario e o servidor
+
+                        close(pipeServidorEntrada[0]);
+                        close(pipeServidorEntrada[1]);
+                        close(pipeServidorSaida[0]);
+                        close(pipeServidorSaida[1]);
+                        
                         //fazer o processamento pedido
                         char** execsFilters = getExecsFilters(task, filtersConfig);
+                        
                         processMusic(getInputFile(request), getOutputFile(request), execsFilters,numberExecs);
+                        
+                        int numberTask = numberOfTasks - 1;
+
+                        write(pipeFiltro[1],&numberTask,4);
+
+                        close(pipeFiltro[1]);
+                        
                         _exit(0);
                     }
                     

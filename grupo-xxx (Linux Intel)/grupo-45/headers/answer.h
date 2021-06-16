@@ -13,6 +13,8 @@ Answer createAnswer2(FiltersConfig filtersConfig, ListTasks runningTasks);
 
 void deleteAnswer(Answer answer);
 
+int comparaToEnd(Answer a);
+
 
 /* --- Functionality --------------------------------------------- */
 
