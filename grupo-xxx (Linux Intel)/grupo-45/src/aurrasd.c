@@ -184,11 +184,10 @@ int main(int argc, char ** args){
                 task = createTask(request,filtersConfig);
                 setNumberTask(task, numberOfTasks++);
 
-
                 filtersRequired = getFiltersRequired(task);
 
                 validateTask = validateTaskProcessing(filtersConfig,task);
-
+                //printf("%d\n",validateTask);
                 if(validateTask == -1){
                     //adiciona à lista de espera e informa o cliente
                     addTask(waitingTasks,task);

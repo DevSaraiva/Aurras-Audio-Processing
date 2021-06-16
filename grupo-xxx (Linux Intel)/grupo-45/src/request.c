@@ -73,7 +73,11 @@ Request initRequest(int argc, char** argv, int pidProcess){
 
     request->numberArguments = 0;
     for(i = 1; i<argc; i++){
-        strcat(request->arguments[i-1],argv[i]);
+        printf("%s\n",argv[i]);
+    }
+
+    for(i = 1; i<argc; i++){
+        strcpy(request->arguments[i-1],argv[i]);
         request->numberArguments++;
     }
     return request;

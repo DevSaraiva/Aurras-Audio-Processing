@@ -41,6 +41,7 @@ int main(int argc,char ** args){
         return -1;
     }
 
+    printRequest(request);
     /*
      * Mostrar ao cliente o serviço que acabou de pedir
      * */

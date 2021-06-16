@@ -42,6 +42,10 @@ Task createTask(Request request,FiltersConfig filterConfig){
     int numberFiltersRequest = getNumberFiltersRequest(request);
 
     i=0, j=0;
+    for(i=0;i<numberFiltersConfig;i++){
+        task->filtersRequired[i] = 0;
+    }
+
     for(i=0;i<numberFiltersRequest;i++){
         for(j=0; j<numberFiltersConfig; j++){
             Filter filter = getFilterConfigIndex(filterConfig,j);
