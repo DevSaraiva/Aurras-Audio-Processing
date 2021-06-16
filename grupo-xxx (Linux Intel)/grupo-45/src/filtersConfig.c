@@ -21,7 +21,9 @@ struct filtersConfig{
 
 
 Filter createFilter(){
-    return malloc(sizeof(struct filter));
+    Filter new = malloc(sizeof(struct filter));
+    new->emExecucao = 0;
+    return new;
 }
 
 char* getIdentificadorFilter(Filter filter){
