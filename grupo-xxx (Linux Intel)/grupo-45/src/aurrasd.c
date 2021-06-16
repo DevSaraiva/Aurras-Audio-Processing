@@ -115,9 +115,7 @@ void parse (char * string2, char ** destination){
 
 }
 
-void initServer(){
 
-}
 
 int main(int argc, char ** args){
     int fd,hold_fifo;
@@ -166,6 +164,8 @@ int main(int argc, char ** args){
         int* filtersRequired;
         int validateTask;
         int numberExecs;
+
+        
 
         Request request = createRequest();
         read(fd,request,requestSize());
