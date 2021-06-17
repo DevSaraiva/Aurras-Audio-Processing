@@ -80,8 +80,9 @@ Task createTask(Request request,FiltersConfig filterConfig){
     task->outputFile = strdup(getOutputFile(request));
     task->execsFilters = execsFilters;
     task->numberTotalFilters = numberFiltersConfig;
-    char* message = getMessage(request);
-    task->comando = strdup(message);
+    char * message = malloc(sizeof(char)*50);
+    strcpy(message,getMessage(request));
+    task->comando = message;
 
     return task;
 }
@@ -126,7 +127,9 @@ int getNumberTask(Task task){
 }
 
 char* getComando(Task task){
-    return strdup(task->comando);
+    char * aux = malloc(sizeof(char) * 100);
+    strcpy (aux,task->comando);
+    return aux;
 }
 
 int getPidProcessTask(Task task){

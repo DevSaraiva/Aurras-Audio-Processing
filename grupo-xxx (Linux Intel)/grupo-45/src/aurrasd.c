@@ -14,7 +14,6 @@
 #include "../headers/processMusic.h"
 
 #define FIFOSERVERCLIENTS "/tmp/fifo"
-#define CONFIGFILENAME "../etc/aurrasd.conf"
 #define SAMPLESFILENAME "../samples/"
 #define OUTPUTSFILENAME "../outputs/"
 #define MAXSIZEINPUTNAME 50
@@ -40,74 +39,7 @@ FiltersConfig filtersConfig;
 
 static int numberOfTasks = 1;
 
-ssize_t readln(int fd, char *line, size_t size){
-    size_t size_Line = 0;
-    int barraN = 0;
 
-    do{
-        read(fd,line + size_Line,1);
-        if(line[size_Line] != '\n' && line[size_Line] != '\0') {
-            size_Line += 1;
-        }
-        else{
-            barraN = 1;
-        }
-    }
-    while(size_Line < size-1 && !barraN);
-    line[size_Line] = '\0';
-
-
-    return size_Line;
-}
-
-int countLinesFile(char* fileName){
-
-    char buff;
-    int linhas = 0;
-    int bytesRead = 0;
-    int fd;
-
-    if( (fd = open(fileName, O_RDONLY, 0666)) == -1){
-        perror("open file to count lines");
-    }
-
-    while((bytesRead = read(fd, &buff, 1)) > 0){
-        if(buff == '\n') linhas++;
-    }
-
-    close(fd);
-    return linhas;
-}
-
-
-FiltersConfig readConfigFile(){
-    int fdConfig;
-    int numFiltros;
-    char line[1024];
-
-    numFiltros = countLinesFile(CONFIGFILENAME);
-
-    FiltersConfig filtersConfig = createFiltersConfig();
-
-    if( (fdConfig = open(CONFIGFILENAME, O_RDONLY, 0666)) == -1){
-        perror("open config file");
-    }
-
-    for(int i = 0; i < numFiltros; i++){
-        Filter filter = createFilter();
-        readln(fdConfig, line, 1024);
-        char* identificador = strdup(strtok(line," "));
-        char* exec =  strdup(strtok(NULL," "));
-        int maxExec = atoi(strtok(NULL," "));
-        setIdentificadorFilter(filter,identificador);
-        setExecutavelFilter(filter, exec);
-        setMaxExecucaoFilter(filter, maxExec);
-        addFilterConfig(filtersConfig,filter);
-    }
-    close(fdConfig);
-
-    return filtersConfig;
-}
 
 
 int contaPal (char s[]){

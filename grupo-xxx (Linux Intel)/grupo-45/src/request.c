@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "../headers/request.h"
 
-
 #define MAXARGS 10
 #define MAXSIZEARG 40
 /*
@@ -51,7 +50,7 @@ Request createRequest(){
 }
 
 
-Request initRequest(int argc, char** argv, int pidProcess){
+Request initRequest(int argc, char** argv, int pidProcess,FiltersConfig filterConfig){
 
     int i;
     if(argc < 2) return NULL;
@@ -59,7 +58,50 @@ Request initRequest(int argc, char** argv, int pidProcess){
     Request request = (Request) malloc(sizeof(struct request));
 
     if( ! strcmp(argv[1],"transform") && argc>4) {
+        char ** filtersRequired = malloc(sizeof (char*) * (argc - 4)); 
+        int i = 0, j = 0;
+        for ( i = 4; i < argc; i++){
+            filtersRequired[i-4] = strdup(argv[i]);
+        }
+
+        int numberFiltersConfig = getNumberFiltersConfig(filterConfig);
+        int * filtersUtilizados = malloc(sizeof(int) * numberFiltersConfig);
+
+        for(i=0;i<numberFiltersConfig;i++){
+            filtersUtilizados[i] = 0;
+        }
+        for(i=0;i<argc-4;i++){
+            for(j=0; j<numberFiltersConfig; j++){
+                Filter filter = getFilterConfigIndex(filterConfig,j);
+
+                char* identificadorFilter = getIdentificadorFilter(filter);
+            
+                if(strcmp(filtersRequired[i],identificadorFilter) == 0){
+                    filtersUtilizados[j]++;
+                    break;
+                }
+        
+            }
+
+        } 
+        // debug
+        for(i=0;i<numberFiltersConfig;i++){
+            printf("%d\n",filtersUtilizados[i]);
+        }
+
+       
+
+        for(i=0;i<numberFiltersConfig;i++){
+            Filter filteraux = getFilterConfigIndex(filterConfig,i);
+            if (filtersUtilizados[i] > getMaxExecucaoFilter(filteraux)){
+                request->service = -1;
+                return request;
+            }
+        }
+
+       
         request->service = 1;
+    
     }
     else if( ! strcmp(argv[1],"status") && argc == 2){
         request->service = 2;
@@ -122,3 +164,4 @@ void printRequest(Request request){
         printf("    :%s\n",request->arguments[i]);
     }
 }
+
