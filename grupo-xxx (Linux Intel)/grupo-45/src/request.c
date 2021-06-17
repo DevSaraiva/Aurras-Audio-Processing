@@ -86,8 +86,6 @@ Request initRequest(int argc, char** argv, int pidProcess,FiltersConfig filterCo
         } 
         
 
-    
-
         for(i=0;i<numberFiltersConfig;i++){
             Filter filteraux = getFilterConfigIndex(filterConfig,i);
             if (filtersUtilizados[i] > getMaxExecucaoFilter(filteraux)){
@@ -103,9 +101,13 @@ Request initRequest(int argc, char** argv, int pidProcess,FiltersConfig filterCo
     else if( ! strcmp(argv[1],"status") && argc == 2){
         request->service = 2;
     }
+    else if( !strcmp(argv[1],"stop") && argc == 2){
+        request->service = 3;
+    }
     else{
-        printf("Argumentos não são válidos");
-        return NULL;
+        printf("Argumentos não são válidos\n");
+        request->service = -1;
+        return request;
     }
 
     request->pidProcess = pidProcess;

@@ -24,4 +24,8 @@ void printAnswer(Answer answer);
 
 char* getMessageAnswer(Answer answer);
 
+Answer createAnswer3();
+
+int toInt(Answer a);
+
 #endif

@@ -289,6 +289,7 @@ int main(int argc, char ** args){
     //Sinaliza o processo de controlo sobre a disponiblidade inicial do servidor
     write(pipeServidorSaida[1], &on, 4);
     
+    Answer answer;
     
     while(!stop){
         
@@ -297,6 +298,7 @@ int main(int argc, char ** args){
         Task task;
         int* filtersRequired;
         int validateTask;
+        
 
         Request request = createRequest();
         read(fd,request,requestSize());
@@ -346,19 +348,35 @@ int main(int argc, char ** args){
                     perror("fifo between server and clients Read");
                 }
 
-                Answer answer = createAnswer2(filtersConfig,runningTasks);
+                answer = createAnswer2(filtersConfig,runningTasks);
                   
                 write(pipeAnswer,answer,answerSize());
                     
                 _exit(0);
-            }
+                }
 
                 break;
 
-            default:
 
+            case 3:
+
+                 if((pid = fork()) == 0){
+
+                sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getRequestPidProcess(request));
+
+                if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
+                    perror("fifo between server and clients Read");
+                }
+
+                answer = createAnswer3(filtersConfig,runningTasks);
+                  
+                write(pipeAnswer,answer,answerSize());
+                    
+                _exit(0);
+                }
 
             break;
+
 
         }
     }

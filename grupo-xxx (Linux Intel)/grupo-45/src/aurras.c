@@ -84,7 +84,7 @@ int main(int argc,char ** args){
     
     
 
-    if(end == 0) printAnswer(a);
+    if(end == 0 && end != -1) printAnswer(a);
 
     while(!end){
 
@@ -94,7 +94,12 @@ int main(int argc,char ** args){
 
     }
 
-    printAnswer(a);
+    if(end != -1) printAnswer(a);
+    else{
+
+        pid_t pid = toInt(a);
+        kill(pid,SIGTERM);
+    }
 
     
     close(pipeRequest);

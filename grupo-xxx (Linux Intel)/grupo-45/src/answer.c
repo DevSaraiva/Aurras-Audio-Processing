@@ -6,6 +6,7 @@
 #include "../headers/answer.h"
 #include "../headers/filtersConfig.h"
 #include "../headers/listTasks.h"
+#include <ctype.h>
 
 
 
@@ -73,6 +74,12 @@ Answer createAnswer2(FiltersConfig filtersConfig, ListTasks runningTasks){
     
 }
 
+Answer createAnswer3(){
+    Answer a = malloc(sizeof(Answer));
+    sprintf(a->message,"%d",getppid());
+    return a;
+}
+
 
 void deleteAnswer(Answer answer){
     free(answer);
@@ -107,8 +114,12 @@ void printAnswer(Answer answer){
 int comparaToEnd(Answer a){
     
     int end = 0;
-    if(strcmp("pending",a->message) != 0) end = 1;
-    else end = 0;
+    if(isdigit(a->message[0])) end = -1;
+    else if(strcmp("pending",a->message) != 0) end = 1;
 
     return end;
+}
+
+int toInt(Answer a){
+    return atoi(a->message);
 }
