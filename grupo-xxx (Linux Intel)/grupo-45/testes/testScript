@@ -1,0 +1,10 @@
+transform sample-1-so.m4a out1.mp3 alto baixo lento
+transform sample-1-so.m4a out2.mp3 eco lento
+status
+transform sample-1-so.m4a out3.mp3 rapido baixo
+transform sample-1-so.m4a out4.mp3 alto baixo lento
+transform sample-1-so.m4a out5.mp3 alto baixo lento
+status
+transform sample-1-so.m4a out6.mp3 alto baixo lento
+transform sample-1-so.m4a out7.mp3 eco lento rapido alto baixo
+transform sample-1-so.m4a out8.mp3 eco

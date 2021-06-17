@@ -406,6 +406,7 @@ int main(int argc, char ** args){
     }
 
     close(fd);
+    close(hold_fifo);
     
 
     return 0;
