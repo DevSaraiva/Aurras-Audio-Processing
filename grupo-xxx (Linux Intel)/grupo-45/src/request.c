@@ -84,12 +84,9 @@ Request initRequest(int argc, char** argv, int pidProcess,FiltersConfig filterCo
             }
 
         } 
-        // debug
-        for(i=0;i<numberFiltersConfig;i++){
-            printf("%d\n",filtersUtilizados[i]);
-        }
+        
 
-       
+    
 
         for(i=0;i<numberFiltersConfig;i++){
             Filter filteraux = getFilterConfigIndex(filterConfig,i);
