@@ -116,11 +116,9 @@ int contaPal (char s[]){
 // Função que recebe uma string e separa por espaços os argumentos
 void parse (char * string2, char ** destination){
     char * string = strtok(string2,";");
-    //printf ("string :%s\n",string);
     char * aux = strtok(string," ");
     int i = 0;
     while (aux != NULL){
-        //printf("%s\n",aux);
         destination[i] = strdup(aux);
         i++;
         aux = strtok(NULL," ");
@@ -128,32 +126,97 @@ void parse (char * string2, char ** destination){
 
 }
 
+
+void executaTask(Task task){
+
+    pid_t pid;
+    int numberExecs = getNumberFiltersTask(task);
+    if((pid = fork()) == 0){
+
+      //fecha o pipe que liga o processo intermediario e o servidor
+      close(pipeServidorEntrada[0]);
+      close(pipeServidorEntrada[1]);
+      close(pipeServidorSaida[0]);
+      close(pipeServidorSaida[1]);
+      //fazer o processamento pedido
+      char** execsFilters = getExecsFilters(task, filtersConfig);
+      processMusic(getInputFileTask(task), getOutputFileTask(task), execsFilters,numberExecs);
+      int numberTask = numberOfTasks - 1;
+      write(pipeFiltro[1],&numberTask,4);
+      close(pipeFiltro[1]);
+      _exit(0);
+    }
+}
+
+
+
+
+void processWaitingTasks(){
+    int i;
+    int* filtersRequired;
+
+    for(i=0; i < getNumberListTasks(waitingTasks); i++){
+        
+        Task task = getTaskIndex(waitingTasks,i);
+        
+        int validTask = validateTaskProcessing(filtersConfig,task);
+        
+        if(validTask == 1){
+            /*
+             * Fazer update dos filtros disponíveis
+             * */
+            filtersRequired = getFiltersRequired(task);
+            
+            updateFiltersConfig(filtersConfig,filtersRequired,1);
+            
+            addTask(runningTasks,task);
+
+            removeTaskIndex(waitingTasks,i);
+
+            executaTask(task);
+
+            }
+        }
+    }
+
+
 void handler_terminatedProcessing(int signum){
     /*
      * Receber um pid de processo
      * */
+
+    int on = 1;
+
     int numberTask;
+
+    //Lê o numero da task a retirar
     
     read(pipeServidorEntrada[0],&numberTask,4);
 
-    Task task = getTask(runningTasks,numberTask);
+    //Imprime no servidor sobre o termino de uma Task
 
+    printf("A task numero %d terminou\n",numberTask);
+
+    Task task = getTask(runningTasks,numberTask);
     
     int* filtersRequired = getFiltersRequired(task);
     /*
      * Remover a task que foi executada no processo com o pid recebido
      * */
     removeTaskByNumber(runningTasks,numberTask);
-
+    
     /*
      * Atualizar os filtros
      * */
     updateFiltersConfig(filtersConfig,filtersRequired,-1);
 
-    /*
-     * Colocar em processamento tasks em espera
-     * */
-    processWaitingTasks(waitingTasks,runningTasks,filtersConfig);
+    
+    //Coloca as tasks da lista de espera em processamento
+    processWaitingTasks();
+    
+    //Alertar filho responsavel pelo processamento que está livre para tratar de sinais
+     write(pipeServidorSaida[1], &on, 4);
+
 }
 
 
@@ -243,14 +306,14 @@ int main(int argc, char ** args){
 
     }
 
-
+    //Fecha a extermidade de leitura do pipe entre os processos que correm os filtros e o intermediario
+    close(pipeFiltro[0]);
+    close(pipeServidorSaida[0]);
+    close(pipeServidorEntrada[1]);
+    
     while(1){
         
-        //Fecha a extermidade de leitura do pipe entre os processos que correm os filtros e o intermediario
-        close(pipeFiltro[0]);
-        close(pipeServidorSaida[0]);
-        close(pipeServidorEntrada[1]);
-
+        
         int on = 1;
 
         //Sinaliza o processo de controlo sobre a disponiblidade inicial do servidor
@@ -262,9 +325,7 @@ int main(int argc, char ** args){
         Task task;
         int* filtersRequired;
         int validateTask;
-        int numberExecs;
 
-        
 
         Request request = createRequest();
         read(fd,request,requestSize());
@@ -279,7 +340,6 @@ int main(int argc, char ** args){
                         }
 
 
-                //printRequest(request);
                 task = createTask(request,filtersConfig);
                 setNumberTask(task, numberOfTasks++);
 
@@ -296,32 +356,10 @@ int main(int argc, char ** args){
                 }
                 else if(validateTask == 1){
                     addTask(runningTasks,task);
-                    updateFiltersConfig(filtersConfig,filtersRequired,1);
-                    numberExecs = getNumberFiltersTask(task);
-
-                    if((pid = fork()) == 0){
-                        
-                        //fecha o pipe que liga o processo intermediario e o servidor
-
-                        close(pipeServidorEntrada[0]);
-                        close(pipeServidorEntrada[1]);
-                        close(pipeServidorSaida[0]);
-                        close(pipeServidorSaida[1]);
-                        
-                        //fazer o processamento pedido
-                        char** execsFilters = getExecsFilters(task, filtersConfig);
-                        
-                        processMusic(getInputFile(request), getOutputFile(request), execsFilters,numberExecs);
-                        
-                        int numberTask = numberOfTasks - 1;
-
-                        write(pipeFiltro[1],&numberTask,4);
-
-                        close(pipeFiltro[1]);
-                        
-                        _exit(0);
-                    }
                     
+                    updateFiltersConfig(filtersConfig,filtersRequired,1);
+                    
+                    executaTask(task);
 
                 }
 
@@ -357,13 +395,14 @@ int main(int argc, char ** args){
                   
                 write(pipeAnswer,answer,answerSize());
                     
+                _exit(0);
             }
 
         }
     }
 
     close(fd);
-    close(hold_fifo);
+    
 
     return 0;
 

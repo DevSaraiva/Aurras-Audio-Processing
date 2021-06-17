@@ -81,28 +81,6 @@ Task getTask (ListTasks wTasks,int num){
 
 
 
-void processWaitingTasks(ListTasks wTasks, ListTasks runningTasks, FiltersConfig filtersConfig){
-    int i;
-    int* filtersRequired;
-
-    for(i=0;i<wTasks->numberTasks;i++){
-        Task task = getTaskIndex(wTasks,i);
-        int validTask = validateTaskProcessing(filtersConfig,task);
-        if(validTask == 1){
-            /*
-             * Fazer update dos filtros disponíveis
-             * */
-            filtersRequired = getFiltersRequired(task);
-            
-            updateFiltersConfig(filtersConfig,filtersRequired,1);
-            addTask(runningTasks,task);
-            removeTaskIndex(wTasks,i);
-
-            }
-        }
-    }
-
-
 
  int removeTaskByNumber (ListTasks wTasks,int num){
     int indiceAremover = -1;
@@ -117,5 +95,13 @@ void processWaitingTasks(ListTasks wTasks, ListTasks runningTasks, FiltersConfig
         return 1;
     } 
     else return -1;
+}
+
+
+void printListTasks( ListTasks lt){
+    for(int i = 0; i < lt->numberTasks; i++){
+        Task t = getTaskIndex(lt,i);
+        printTask(t);
+    }
 }
 

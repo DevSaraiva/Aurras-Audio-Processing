@@ -26,12 +26,12 @@ int getNumberFiltersRequest(Request request){
 
 char* getInputFile(Request request){
     if(request->service == 2) return NULL;
-    return request->arguments[1];
+    return strdup(request->arguments[1]);
 }
 
 char* getOutputFile(Request request){
     if(request->service == 2) return NULL;
-    return request->arguments[2];
+    return strdup(request->arguments[2]);
 }
 
 char** getFilters(Request request){
@@ -107,26 +107,6 @@ char* getMessage(Request request){
     return message;
 }
 
-/*
-    Funcionalidades
-    -------------
-*/
-/*
-int* filtersRequest(Request request){
-    if(request->service == 2) return 0;
-
-    int filtersNeeded[];
-    char* token;
-
-   token = strtok(str, s);
-
-   while( token != NULL ) {
-      printf( " %s\n", token );
-
-      token = strtok(NULL, s);
-   }
-}
-*/
 int requestSize(){
     return sizeof(struct request);
 }

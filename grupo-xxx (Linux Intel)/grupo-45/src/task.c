@@ -24,6 +24,8 @@ struct task{
     char * comando;
     char ** execsFilters;
     int numberFiltersTask;
+    char * inputFile; 
+    char * outputFile;
     int filtersRequired[];
 };
 
@@ -74,7 +76,8 @@ Task createTask(Request request,FiltersConfig filterConfig){
             }
         }
     }
-
+    task->inputFile = strdup(getInputFile(request));
+    task->outputFile = strdup(getOutputFile(request));
     task->execsFilters = execsFilters;
     task->numberTotalFilters = numberFiltersConfig;
     char* message = getMessage(request);
@@ -179,4 +182,13 @@ void printTask(Task task){
     }
     printf("comando: %s\n\n",task->comando);
 
+}
+
+
+char * getInputFileTask(Task t){
+    return strdup(t->inputFile);
+}
+
+char * getOutputFileTask(Task t){
+    return strdup(t->outputFile);
 }
