@@ -12,7 +12,15 @@
 #define FIFOSERVERCLIENTS "/tmp/fifo"
 
 
+void handler_ctrl_c(int signum){
+    kill(getpid(),SIGSTOP);
+}
+
+
 int main(int argc,char ** args){
+
+
+    signal(SIGINT,handler_ctrl_c);
 
     setbuf(stdout,NULL);
     int pipeAnswer;

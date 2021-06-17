@@ -363,22 +363,6 @@ int main(int argc, char ** args){
 
                 }
 
-                /* Atualizar o filterConfig com os filtros que passam a ser utilizados */
-
-                // O servidor tem de ir buscar o estado atual do servidor e enviar para o client
-                // A leitura do estado tem de ser uma operação atómica
-                // ao criar um processo flho o estado do processo filho não é mais alterado pelo processo pai
-                // por isso o estado do servidor no processo filho é estático
-                //
-
-                //verificar se posso fazer o processamento
-                //se sim criar processo filho para fazer o processamento e atualizar os filtro e colocar numa fila de tasks em execução
-                //se não, colocar o processamento numa fila de espera, e passar para o próximo request
-
-/*
-                char filtrosRequest[numfilters] = filtersNeeded(request);
-                filtersExist(filtrosRequest);
-*/
                break;
 
             case 2:
