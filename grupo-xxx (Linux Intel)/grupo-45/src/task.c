@@ -151,12 +151,10 @@ int validateTaskProcessing(FiltersConfig fConfig ,Task t){
     }
 
     sprintf(pipeClient,"%s%d",FIFOSERVERCLIENTS,getPidProcessTask(t));
-
-    printf("entrei");
+        
         if( (pipeAnswer = open(pipeClient, O_WRONLY)) == -1){
             perror("fifo between server and clients Read");
         }
-    printf("sai");
     
     Answer a = createAnswer1(2);
 

@@ -42,7 +42,6 @@ void printTask(Task task);
 
 int validateTaskProcessing(FiltersConfig fConfig ,Task t);
 
-
 char * getInputFileTask(Task t);
 
 char * getOutputFileTask(Task t);

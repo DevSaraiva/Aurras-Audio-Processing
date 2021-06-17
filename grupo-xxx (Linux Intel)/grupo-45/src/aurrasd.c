@@ -15,6 +15,10 @@
 
 #define FIFOSERVERCLIENTS "/tmp/fifo"
 #define CONFIGFILENAME "../etc/aurrasd.conf"
+#define SAMPLESFILENAME "../samples/"
+#define OUTPUTSFILENAME "../outputs/"
+#define MAXSIZEINPUTNAME 50
+#define MAXSIZEOUTPUTNAME 50
 
 
 static int pipeFiltro[2];
@@ -131,20 +135,33 @@ void executaTask(Task task){
 
     pid_t pid;
     int numberExecs = getNumberFiltersTask(task);
+    
+      //Redirecionamento do ficheiro de output para a pasta correta
+      char redInputName[MAXSIZEINPUTNAME] = "";
+      char* fileSamplesName = SAMPLESFILENAME;
+      strcat(redInputName,fileSamplesName);
+      strcat(redInputName,getInputFileTask(task));
+
+      char redOutputName[MAXSIZEOUTPUTNAME] = "";
+      char* fileOutputsName = OUTPUTSFILENAME;
+      strcat(redOutputName,fileOutputsName);
+      strcat(redOutputName,getOutputFileTask(task));
+    
+    
     if((pid = fork()) == 0){
 
-      //fecha o pipe que liga o processo intermediario e o servidor
-      close(pipeServidorEntrada[0]);
-      close(pipeServidorEntrada[1]);
-      close(pipeServidorSaida[0]);
-      close(pipeServidorSaida[1]);
-      //fazer o processamento pedido
-      char** execsFilters = getExecsFilters(task, filtersConfig);
-      processMusic(getInputFileTask(task), getOutputFileTask(task), execsFilters,numberExecs);
-      int numberTask = numberOfTasks - 1;
-      write(pipeFiltro[1],&numberTask,4);
-      close(pipeFiltro[1]);
-      _exit(0);
+        //fecha o pipe que liga o processo intermediario e o servidor
+        close(pipeServidorEntrada[0]);
+        close(pipeServidorEntrada[1]);
+        close(pipeServidorSaida[0]);
+        close(pipeServidorSaida[1]);
+        //fazer o processamento pedido
+        char** execsFilters = getExecsFilters(task, filtersConfig);
+        processMusic(redInputName,redOutputName, execsFilters,numberExecs);
+        int numberTask = getNumberTask(task);
+        write(pipeFiltro[1],&numberTask,4);
+        close(pipeFiltro[1]);
+        _exit(0);
     }
 }
 
