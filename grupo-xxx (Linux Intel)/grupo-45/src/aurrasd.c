@@ -17,9 +17,9 @@
 #define CONFIGFILENAME "../etc/aurrasd.conf"
 
 
-int pipeFiltro[2];
-int pipeServidorEntrada[2];
-int pipeServidorSaida[2];
+static int pipeFiltro[2];
+static int pipeServidorEntrada[2];
+static int pipeServidorSaida[2];
 
 /* Lista de tasks em execucao */
 ListTasks runningTasks;
@@ -137,21 +137,23 @@ void handler_terminatedProcessing(int signum){
     read(pipeServidorEntrada[0],&numberTask,4);
 
     Task task = getTask(runningTasks,numberTask);
+
+    
     int* filtersRequired = getFiltersRequired(task);
     /*
      * Remover a task que foi executada no processo com o pid recebido
      * */
-    //removeTaskByNumber(runningTasks,numberTask);
+    removeTaskByNumber(runningTasks,numberTask);
 
     /*
      * Atualizar os filtros
      * */
-    //updateFiltersConfig(filtersConfig,filtersRequired,-1);
+    updateFiltersConfig(filtersConfig,filtersRequired,-1);
 
     /*
      * Colocar em processamento tasks em espera
      * */
-    //processWaitingTasks(waitingTasks,runningTasks,filtersConfig);
+    processWaitingTasks(waitingTasks,runningTasks,filtersConfig);
 }
 
 
@@ -179,10 +181,10 @@ int main(int argc, char ** args){
 
 
     /* Lista de tasks em execucao */
-    ListTasks runningTasks = createListTasks();
+    runningTasks = createListTasks();
 
     /* Lista de tasks em espera */
-    ListTasks waitingTasks = createListTasks();
+    waitingTasks = createListTasks();
 
 
     /*

@@ -65,9 +65,13 @@ int removeTask (ListTasks wTasks,int num){
 }
 
 Task getTask (ListTasks wTasks,int num){
+    
     Task taskAdevolver = NULL;
-    for (int i = 0; i < wTasks->numberTasks && taskAdevolver != NULL;i++){
+    
+    for (int i = 0; i < wTasks->numberTasks ;i++){
+        
         Task aux = getTaskIndex(wTasks,i);
+        
         if (getNumberTask(aux) == num){
             taskAdevolver = aux;
         }

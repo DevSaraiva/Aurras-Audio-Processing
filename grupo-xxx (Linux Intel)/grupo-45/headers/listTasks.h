@@ -26,7 +26,6 @@ int removeTask (ListTasks wTasks,int num);
 
 void processWaitingTasks(ListTasks wTasks, ListTasks runningTasks, FiltersConfig filtersConfig);
 
-
 Task getTask (ListTasks wTasks,int num);
 
  int removeTaskByNumber (ListTasks wTasks,int num);
