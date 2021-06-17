@@ -25,6 +25,10 @@ static int pipeFiltro[2];
 static int pipeServidorEntrada[2];
 static int pipeServidorSaida[2];
 
+int stop = 0;
+
+int fd,hold_fifo;
+
 /* Lista de tasks em execucao */
 ListTasks runningTasks;
 
@@ -192,9 +196,9 @@ void processWaitingTasks(){
 
             executaTask(task);
 
-            }
         }
     }
+}
 
 
 void handler_terminatedProcessing(int signum){
@@ -218,7 +222,7 @@ void handler_terminatedProcessing(int signum){
     
     int* filtersRequired = getFiltersRequired(task);
     /*
-     * Remover a task que foi executada no processo com o pid recebido
+     * Remover a task que foi executada no processo com o numero recebido
      * */
     removeTaskByNumber(runningTasks,numberTask);
     
@@ -234,14 +238,28 @@ void handler_terminatedProcessing(int signum){
     //Alertar filho responsavel pelo processamento que está livre para tratar de sinais
      write(pipeServidorSaida[1], &on, 4);
 
+     
+
+
+}
+
+void handler_SIGTERM(int signum){
+
+    stop = 1;
+    Request r = createRequest();
+    write(hold_fifo,r,requestSize());
+    
+
 }
 
 
 
 int main(int argc, char ** args){
     
-    int fd,hold_fifo;
+    
     pid_t pid;
+
+    printf("PID do servidor %d\n",getpid());
 
     unlink(FIFOSERVERCLIENTS);
 
@@ -257,6 +275,10 @@ int main(int argc, char ** args){
 
     if(signal(SIGUSR1,handler_terminatedProcessing) == SIG_ERR){
         perror("SIGUSRS failed");
+    }
+
+    if(signal(SIGTERM,handler_SIGTERM) == SIG_ERR){
+        perror("SIGTERM failed");
     }
 
 
@@ -304,21 +326,23 @@ int main(int argc, char ** args){
         close(pipeFiltro[1]);
         close(pipeServidorEntrada[0]);
         close(pipeServidorSaida[1]);
-
+       
+       
         while(1){
-
+        
             //Recebe o numero da task
             read(pipeFiltro[0],&taskNumber,4);
 
             //bloqueia o envio enquanto o servidor esta a tratar um termino
             read(pipeServidorSaida[0],&servidorDisponivel,4);
-            
+        
+
             //Envia para o servidor o numero da task a retirar
             write(pipeServidorEntrada[1],&taskNumber,4);
 
             //Envia para o servidor um sinal a avisar que pode ler do pipe
             kill(pai,SIGUSR1);
-
+        
         }
 
     }
@@ -334,18 +358,13 @@ int main(int argc, char ** args){
     write(pipeServidorSaida[1], &on, 4);
     
     
-    while(1){
+    while(!stop){
         
-        
-        
-
-
         char pipeClient[30];
         int pipeAnswer;
         Task task;
         int* filtersRequired;
         int validateTask;
-
 
         Request request = createRequest();
         read(fd,request,requestSize());
@@ -402,11 +421,30 @@ int main(int argc, char ** args){
                 _exit(0);
             }
 
+                break;
+
+            default:
+
+
+            break;
+
         }
     }
 
+    while(getNumberListTasks(waitingTasks) != 0 || getNumberListTasks(runningTasks) != 0){
+    
+
+    }
+
+
+
     close(fd);
     close(hold_fifo);
+
+
+   
+
+
     
 
     return 0;
