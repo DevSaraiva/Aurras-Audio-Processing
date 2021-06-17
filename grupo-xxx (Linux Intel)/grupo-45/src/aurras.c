@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include "../headers/request.h"
 #include "../headers/answer.h"
+#include "../headers/filtersConfig.h"
 
 #define FIFOSERVERCLIENTS "/tmp/fifo"
 
@@ -34,11 +35,16 @@ int main(int argc,char ** args){
         perror("pipe de resposta do servidor ao cliente");
 
     }
+     FiltersConfig fConfig = readConfigFile();
     /*
      * Criar o request para enviar ao servidor
      * */
-    Request request = initRequest(argc,args,pidProcess);
+    Request request = initRequest(argc,args,pidProcess,fConfig);
 
+    if (getRequestService(request) == -1){
+        printf("Comando não suportado\n");
+        return -1;
+    }
     /*
      * O serviço pedido não é válido
      * */

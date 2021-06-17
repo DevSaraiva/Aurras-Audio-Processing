@@ -2,14 +2,14 @@
 #define FILE_REQUEST_SEEN
 
 #include <glib.h>
-
+#include "../headers/filtersConfig.h"
 
 typedef struct request *Request;
 
 
 Request createRequest();
 
-Request initRequest(int argc, char** argv, int pidProcess);
+Request initRequest(int argc, char** argv, int pidProcess,FiltersConfig fConfig);
 
 void deleteRequest(Request request);
 

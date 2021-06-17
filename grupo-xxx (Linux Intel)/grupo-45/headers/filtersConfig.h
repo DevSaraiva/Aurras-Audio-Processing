@@ -49,5 +49,10 @@ void deleteFiltersConfig(FiltersConfig fConfig);
 
 void printFilterConfig(FiltersConfig fConfig);
 
+FiltersConfig readConfigFile();
+
+ssize_t readln(int fd, char *line, size_t size);
+
+int countLinesFile(char* fileName);
 
 #endif
