@@ -260,13 +260,16 @@ int main(int argc, char ** args){
     close(pipeServidorSaida[0]);
     close(pipeServidorEntrada[1]);
     
+    int on = 1;
+
+    //Sinaliza o processo de controlo sobre a disponiblidade inicial do servidor
+    write(pipeServidorSaida[1], &on, 4);
+    
+    
     while(1){
         
         
-        int on = 1;
-
-        //Sinaliza o processo de controlo sobre a disponiblidade inicial do servidor
-        write(pipeServidorSaida[1], &on, 4);
+        
 
 
         char pipeClient[30];
@@ -335,6 +338,7 @@ int main(int argc, char ** args){
     }
 
     close(fd);
+    close(hold_fifo);
     
 
     return 0;
